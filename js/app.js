@@ -49,15 +49,18 @@ async function renderWeather(force=false){
   $("#weatherTemp").textContent=Number.isFinite(c.temperature_2m)?Math.round(c.temperature_2m)+"°C":"—";
   $("#weatherCondition").textContent=labels[code]||"Current conditions";
   $("#weatherUpdated").textContent=(r.message||"Updated")+(r.provider?" · "+r.provider:"");
+  const aq=r.airQuality||{};
   const vals=[
    Number.isFinite(c.apparent_temperature)?c.apparent_temperature.toFixed(1)+"°C":"—",
    Number.isFinite(c.wind_speed_10m)?c.wind_speed_10m.toFixed(1)+" km/h":"—",
-   "—","—",
+   Number.isFinite(c.wind_gusts_10m)?c.wind_gusts_10m.toFixed(1)+" km/h":"—",
+   Number.isFinite(c.visibility)?(c.visibility/1000).toFixed(1)+" km":"—",
    Number.isFinite(c.relative_humidity_2m)?c.relative_humidity_2m+" %":"—",
    Number.isFinite(c.cloud_cover)?c.cloud_cover+" %":"—",
-   "—","—",
+   Number.isFinite(c.uv_index)?c.uv_index.toFixed(1):"—",
+   Number.isFinite(aq.us_aqi)?String(Math.round(aq.us_aqi)):Number.isFinite(aq.european_aqi)?String(Math.round(aq.european_aqi)):"—",
    Number.isFinite(c.surface_pressure)?Math.round(c.surface_pressure)+" hPa":"—",
-   "—",
+   Number.isFinite(c.dew_point_2m)?c.dew_point_2m.toFixed(1)+"°C":"—",
    Number.isFinite(c.precipitation)?c.precipitation+" mm":"—",
    Number.isFinite(d.precipitation_probability_max?.[0])?d.precipitation_probability_max[0]+" %":"—",
    d.sunrise?.[0]?new Date(d.sunrise[0]).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"—",
