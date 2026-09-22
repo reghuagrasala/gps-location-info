@@ -18,6 +18,7 @@ function normalise(d){
 }
 export async function reverseGeocode(lat,lon){
  if(!Number.isFinite(lat)||!Number.isFinite(lon)||!navigator.onLine)return{ok:false};
+ try{const q=new URL("./functions/api/address.js",location.href);q.searchParams.set("lat",lat.toFixed(6));q.searchParams.set("lon",lon.toFixed(6));const d=await fetchJSON(q.toString(),9000);if(d?.ok)return d}catch{}
  const providers=[
   async()=>{
    const u=new URL(PHOTON);u.searchParams.set("lat",lat);u.searchParams.set("lon",lon);
