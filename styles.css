@@ -196,3 +196,13 @@ body.detail-mode .view{touch-action:pan-y}
 .gps-diagnostic.ok{border-color:rgba(67,220,130,.38)}
 .gps-diagnostic.error{border-color:rgba(255,100,100,.42)}
 @media (max-width:480px){.gps-diagnostic{font-size:10px;gap:3px 7px;padding:8px 9px}}
+
+/* v34: information sheet used by the top settings and info buttons */
+.info-sheet[hidden]{display:none!important}
+.info-sheet{position:fixed;inset:0;z-index:1000;display:flex;align-items:center!important;justify-content:center!important;padding:18px;box-sizing:border-box}
+.info-sheet .sheet-bg{position:absolute;inset:0;background:rgba(0,8,20,.78);backdrop-filter:blur(5px)}
+.info-sheet .sheet-box{position:relative;z-index:1;width:min(92vw,430px);padding:24px 22px 22px;border:1px solid rgba(100,190,255,.45);border-radius:22px;background:linear-gradient(145deg,#09223a,#03101f);box-shadow:0 18px 60px rgba(0,0,0,.55);text-align:center;color:#eef7ff}
+.info-sheet .sheet-box h3{margin:8px 0 10px;font-size:21px}
+.info-sheet .sheet-box p{margin:0;line-height:1.55;color:#c8d9e8;font-size:15px}
+.info-sheet #sheetSymbol{font-size:32px;margin-bottom:4px}
+.info-sheet #sheetClose{position:absolute;right:10px;top:8px;width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;font-size:25px;cursor:pointer}
