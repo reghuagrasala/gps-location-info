@@ -47,7 +47,31 @@ export function initGlobe(element,{mini=false}={}){
   return g;
  }catch{fallback(element);return null}
 }
-export function resizeGlobe(element){const g=instances.get(element);if(!g)return;try{const size=Math.max(1,Math.min(element.clientWidth,element.clientHeight));g.width(size).height(size)}catch{}}
+export function resizeGlobe(element){
+ const g=instances.get(element); if(!g||!element)return false;
+ try{
+  const w=element.clientWidth,h=element.clientHeight;
+  if(w<30||h<30)return false;
+  g.width(w).height(h);
+  try{g.renderer().setPixelRatio(Math.min(window.devicePixelRatio||1,2))}catch{}
+  return true;
+ }catch{return false}
+}
+export function restoreGlobe(element){
+ const g=instances.get(element),s=state.get(element);
+ if(!g)return false;
+ const restore=()=>{
+  if(!resizeGlobe(element))return false;
+  try{
+   g.resumeAnimation?.();
+   if(s?.lastP)updateGlobe(element,s.lastP);
+   return true;
+  }catch{return false}
+ };
+ restore();
+ [80,220,500,900].forEach(ms=>setTimeout(restore,ms));
+ return true;
+}
 export function recenterGlobe(element,p){
  const g=instances.get(element),s=state.get(element);
  if(!g||!p||!Number.isFinite(p.lat)||!Number.isFinite(p.lon))return;
