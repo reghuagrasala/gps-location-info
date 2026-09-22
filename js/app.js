@@ -1,5 +1,6 @@
 import{startGPS,onGPS}from "./gps.js";
 import{dms,plusCode,bearingName}from "./coordinates.js";
+import{moonPhase}from "./astronomy.js";
 import{getDigiPin,isIndiaForDigiPin}from "./digipin.js";
 import{savePlace,getPlaces,deletePlace}from "./storage.js";
 import{enableCompass,onHeading,isActive}from "./compass.js";
@@ -54,7 +55,7 @@ async function renderWeather(force=false){
   $("#weatherTemp").textContent=Number.isFinite(c.temperature_2m)?Math.round(c.temperature_2m)+"°C":"—";
   $("#weatherCondition").textContent=labels[code]||"Current conditions";
   $("#weatherUpdated").textContent=(r.message||"Updated")+(r.provider?" · "+r.provider:"");
-  const aq=r.airQuality||{};
+  const aq=r.airQuality||{},moon=moonPhase(new Date());
   const vals=[
    Number.isFinite(c.apparent_temperature)?c.apparent_temperature.toFixed(1)+"°C":"—",
    Number.isFinite(c.wind_speed_10m)?c.wind_speed_10m.toFixed(1)+" km/h":"—",
@@ -70,7 +71,7 @@ async function renderWeather(force=false){
    Number.isFinite(d.precipitation_probability_max?.[0])?d.precipitation_probability_max[0]+" %":"—",
    d.sunrise?.[0]?new Date(d.sunrise[0]).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"—",
    d.sunset?.[0]?new Date(d.sunset[0]).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"—",
-   "—"
+   moon.name
   ];
   g.querySelectorAll(".weather-card").forEach((el,i)=>{el.querySelector("b").textContent=vals[i]??"—";el.querySelector("small").textContent=r.provider||"Updated"});
  }finally{weatherBusy=false}
