@@ -131,3 +131,32 @@ body.detail-mode .topbar{display:none}body.detail-mode main{padding-top:env(safe
     flex-basis:min(calc(100vw - 28px),350px);
   }
 }
+
+/* Final Home layout: compact centered Earth + navigation anchored to the bottom. */
+.home-view.active{display:flex!important;flex-direction:column!important;justify-content:flex-start!important;overflow:hidden!important}
+.home-view .globe-card{
+  flex:0 0 min(92vw,400px)!important;
+  width:min(92vw,400px)!important;
+  height:min(92vw,400px)!important;
+  max-height:min(92vw,400px)!important;
+  margin:8px auto 0!important;
+}
+.home-view .home-grid{
+  width:100%!important;
+  margin-top:auto!important;
+  margin-bottom:0!important;
+  padding-bottom:2px!important;
+  flex:0 0 auto!important;
+}
+@media(max-height:720px){
+  .home-view .globe-card{
+    flex-basis:min(82vw,330px)!important;
+    width:min(82vw,330px)!important;
+    height:min(82vw,330px)!important;
+    max-height:min(82vw,330px)!important;
+    margin-top:4px!important;
+  }
+}
+/* Globe.gl supplies the element's projection transform. Do not override it with CSS. */
+.earth-marker,.mini-marker{transform:none!important}
+.earth-marker-copy{transform:none!important}
