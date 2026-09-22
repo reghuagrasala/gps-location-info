@@ -1,4 +1,4 @@
-import{startGPS,retryGPS,onGPS,diagnostic}from "./gps.js?v=30";
+import{startGPS,retryGPS,onGPS,diagnostic}from "./gps.js?v=31";
 import{dms,plusCode,bearingName}from "./coordinates.js";
 import{getDigiPin,isIndiaForDigiPin}from "./digipin.js";
 import{enableCompass,onHeading,isActive}from "./compass.js";
@@ -166,6 +166,15 @@ onGPS(p=>{
  if(moved)lastAddress=null;
  gps=p;render();
  if(p&&!p.error){if(moved||!lastAddress)refreshAddress();if(!lastWeather||Date.now()-lastWeatherAt>300000)refreshWeather()}
+});
+window.addEventListener("direct-gps-success",e=>{
+ const p=e.detail;
+ if(!p?.coords)return;
+ const c=p.coords;
+ gps={lat:c.latitude,lon:c.longitude,accuracy:c.accuracy,altitude:c.altitude,speed:c.speed,heading:c.heading,time:p.timestamp,error:null,source:"direct browser GPS"};
+ render();
+ refreshAddress();
+ refreshWeather();
 });
 onHeading(h=>{currentHeading=(h+360)%360;if(gps)gps.heading=currentHeading;$("headingValue").textContent=Math.round(currentHeading)+"°";$("headingDir").textContent=bearingName(currentHeading);$("compassStatus").textContent="Active";$("compassDial").style.transform="rotate("+(-currentHeading)+"deg)";render()});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){restoreGlobe($("globe"));if(gps)setTimeout(()=>recenterGlobe($("globe"),gps),120)}});
