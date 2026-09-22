@@ -73,7 +73,7 @@ async function renderWeather(force=false){
    d.sunset?.[0]?new Date(d.sunset[0]).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"—",
    moon.name
   ];
-  g.querySelectorAll(".weather-card").forEach((el,i)=>{el.querySelector("b").textContent=vals[i]??"—";el.querySelector("small").textContent=r.provider||"Updated"});
+  g.querySelectorAll(".weather-card").forEach((el,i)=>{el.dataset.infoKey=String(weatherLabels[i]||el.querySelector("label")?.textContent||"").toLowerCase().replace(/[^a-z0-9]+/g,"-");el.querySelector("b").textContent=vals[i]??"—";el.querySelector("small").textContent=r.provider||"Updated"});
  }finally{weatherBusy=false}
 }
 $$("[data-view]").forEach(b=>b.onclick=()=>show(b.dataset.view));$$("[data-back]").forEach(b=>b.onclick=()=>show("home"));window.addEventListener("popstate",()=>show(location.hash.slice(1)||"home"));
@@ -138,6 +138,19 @@ onGPS(p=>{gps=p;renderAll();enrichPlace(p);if((!lastWeather||Date.now()-lastWeat
 window.addEventListener("resize",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"))});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){restoreGlobe($("#globe"));resizeGlobe($("#positionGlobe"));renderAll()}});
 window.addEventListener("orientationchange",()=>setTimeout(()=>restoreGlobe($("#globe")),180));
+let deferredInstallPrompt=null;
+const installBtn=$("#installBtn");
+function isStandalone(){return window.matchMedia?.("(display-mode: standalone)").matches||window.navigator.standalone===true}
+function isIOS(){return /iphone|ipad|ipod/i.test(navigator.userAgent)}
+function updateInstallButton(){if(!installBtn)return;if(isStandalone()){installBtn.hidden=true;return}installBtn.hidden=false;installBtn.textContent=deferredInstallPrompt?"Install App":(isIOS()?"Add to Home Screen":"Install App")}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;updateInstallButton()});
+window.addEventListener("appinstalled",()=>{deferredInstallPrompt=null;updateInstallButton()});
+if(installBtn)installBtn.onclick=async()=>{
+ if(deferredInstallPrompt){const p=deferredInstallPrompt;deferredInstallPrompt=null;updateInstallButton();try{await p.prompt();await p.userChoice}catch{}return}
+ if(isIOS()){showInfo("Add to Home Screen","In Safari, tap Share, choose Add to Home Screen, enable Open as Web App, then tap Add.");return}
+ showInfo("Install App","Use the browser's Install or Add to Home Screen command. Supported Android browsers may also show an install prompt.");
+};
+updateInstallButton();
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});startGPS();show(location.hash.slice(1)||"home");
 
 const infoDescriptions={
@@ -175,16 +188,80 @@ const infoDescriptions={
 "sunset":["Sunset","Local time when the Sun sets below the horizon.","🌇"],
 "moon-phase":["Moon Phase","The Moon phase is calculated locally. Tap to see its current shape and a brief explanation.","☾"],
 };
+function moonPhaseDescription(m){const n=m.name;if(n==="Waxing Gibbous")return"More than half of the Moon is illuminated, and the illuminated portion is growing toward Full Moon.";if(n==="Waning Gibbous")return"More than half is illuminated, but the illuminated portion is shrinking after Full Moon.";if(n==="First Quarter")return"About half of the visible Moon is illuminated, and the illuminated portion is increasing.";if(n==="Last Quarter")return"About half is illuminated, and the illuminated portion is decreasing.";if(n==="Waxing Crescent")return"A thin illuminated crescent is growing toward First Quarter.";if(n==="Waning Crescent")return"A thin illuminated crescent is shrinking toward New Moon.";if(n==="Full Moon")return"The Earth-facing side is nearly fully illuminated.";return"The Moon is near New Moon, when the Earth-facing side is mostly unilluminated."}
+function moonVisual(m){
+ const f=Math.max(0,Math.min(1,m.illumination));
+ const R=42, rx=Math.max(.5,Math.abs(2*f-1)*R);
+ const waxing=m.age<14.7652944265;
+ let path;
+ if(f<0.001){
+  path='<circle cx="50" cy="50" r="42" fill="#071b2d"/>';
+ }else if(f>0.999){
+  path='<circle cx="50" cy="50" r="42" fill="#f4f0d5"/>';
+ }else if(waxing){
+  path='<path d="M50 8 A42 42 0 0 1 50 92 A '+rx+' 42 0 0 0 50 8 Z" fill="#f4f0d5"/>';
+ }else{
+  path='<path d="M50 8 A42 42 0 0 0 50 92 A '+rx+' 42 0 0 1 50 8 Z" fill="#f4f0d5"/>';
+ }
+ return '<div class="moon-visual"><svg class="moon-svg" viewBox="0 0 100 100" role="img" aria-label="'+m.name+', '+Math.round(f*100)+'% illuminated"><circle cx="50" cy="50" r="42" fill="#071b2d"/>'+path+'</svg><b>'+m.name+'</b><small>'+Math.round(f*100)+'% illuminated</small></div>';
+}
 function showInfo(label,value){
- const key=String(label).toLowerCase().replace(/[^a-z0-9]+/g,"-"),info=infoDescriptions[key],sheet=$("#infoSheet");
+ const raw=String(label),key=infoDescriptions[raw]?raw:raw.toLowerCase().replace(/[^a-z0-9]+/g,"-"),info=infoDescriptions[key],sheet=$("#infoSheet");
  if(!info||!sheet)return;
- $("#infoTitle").textContent=info[0];$("#infoDescription").textContent=info[1];
+ const m=key==="moon-phase"?moonPhase(new Date()):null;
+ $("#infoTitle").textContent=info[0];
+ $("#infoDescription").textContent=m?moonPhaseDescription(m):info[1];
  const v=$("#infoVisual");v.className="info-visual";
- if(key==="moon-phase"){const m=moonPhase(new Date());v.innerHTML="<div class=\"moon-visual\"><div class=\"moon-disc\"><i></i></div><b>"+m.name+"</b><small>"+Math.round(m.illumination*100)+"% illuminated</small></div>";v.dataset.age=m.age}else{v.innerHTML="<div class=\"info-symbol\">"+info[2]+"</div><small>"+String(value||"Current value")+"</small>"}
+ v.innerHTML=m?moonVisual(m):'<div class="info-symbol">'+info[2]+'</div><small>'+String(value||"Current value")+'</small>';
  sheet.classList.add("open");sheet.setAttribute("aria-hidden","false");
 }
 function closeInfo(){const s=$("#infoSheet");if(s){s.classList.remove("open");s.setAttribute("aria-hidden","true")}}
-document.addEventListener("click",e=>{if(e.target.closest("[data-info-close]")){closeInfo();return}const el=e.target.closest(".data-card,.weather-card");if(el){showInfo(el.querySelector("label")?.textContent||"",el.querySelector("b")?.textContent||"")}});
+function copyText(t){if(!t||t==="—")return;try{navigator.clipboard?.writeText(t)}catch{}}
+function weatherTab(i){
+  $$(".weather-tabs button").forEach((x,n)=>x.classList.toggle("active",n===i));
+  if(!lastWeather){renderWeather(true);return}
+  const g=$("#weatherGrid"),h=lastWeather.hourly||{},d=lastWeather.daily||{};
+  if(i===0){renderWeather();return}
+  if(i===1){
+    const times=h.time||[],temps=h.temperature_2m||[],probs=h.precipitation_probability||[],rows=[];
+    let startIndex=times.findIndex(t=>new Date(t)>=new Date()); if(startIndex<0)startIndex=0;
+    for(let j=startIndex;j<Math.min(startIndex+12,times.length);j++){
+      const t=new Date(times[j]).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+      rows.push('<div class="weather-card"><label>'+t+'</label><b>'+(Number.isFinite(temps[j])?temps[j].toFixed(1)+"°C":"—")+'</b><small>Rain chance '+(Number.isFinite(probs[j])?probs[j]+"%":"—")+'</small></div>');
+    }
+    g.innerHTML=rows.join("")||'<div class="weather-card weather-message"><b>Hourly data unavailable</b><small>Refresh weather to try again.</small></div>';
+    $("#weatherUpdated").textContent="Hourly forecast · "+(lastWeather.provider||"weather service");return;
+  }
+  if(i===2){
+    const dates=d.time||[],max=d.temperature_2m_max||[],min=d.temperature_2m_min||[],rows=[];
+    for(let j=0;j<Math.min(3,dates.length);j++){
+      const day=new Date(dates[j]+"T12:00:00").toLocaleDateString([],{weekday:"short",day:"numeric",month:"short"});
+      rows.push('<div class="weather-card"><label>'+day+'</label><b>'+(Number.isFinite(max[j])?Math.round(max[j])+"°":"—")+' / '+(Number.isFinite(min[j])?Math.round(min[j])+"°C":"—")+'</b><small>High / Low</small></div>');
+    }
+    g.innerHTML=rows.join("")||'<div class="weather-card weather-message"><b>Daily data unavailable</b><small>Refresh weather to try again.</small></div>';
+    $("#weatherUpdated").textContent="3-day forecast · "+(lastWeather.provider||"weather service");return;
+  }
+  const title=i===3?"Radar":"Map";
+  const msg=i===3?"Radar requires a radar provider.":"Map requires a map provider. Use MAP on Position for navigation.";
+  g.innerHTML='<div class="weather-card weather-message" style="grid-column:1/-1;min-height:110px"><b>'+title+'</b><small>'+msg+'</small></div>';
+  $("#weatherUpdated").textContent=title+" · provider not connected";
+}
+document.addEventListener("click",e=>{
+  const cardEl=e.target.closest(".data-card,.weather-card");
+  if(cardEl){const b=cardEl.querySelector("b");if(b)copyText(b.textContent)}
+  const tab=e.target.closest(".weather-tabs button");
+  if(tab){e.preventDefault();e.stopPropagation();weatherTab([...$$(".weather-tabs button")].indexOf(tab))}
+});document.addEventListener("click",e=>{
+ if(e.target.closest("[data-info-close]")){closeInfo();return}
+ const el=e.target.closest(".data-card,.weather-card");
+ if(el){
+   const key=el.dataset.infoKey||el.querySelector("label")?.textContent||"";
+   showInfo(key,el.querySelector("b")?.textContent||"");
+   return;
+ }
+ const tab=e.target.closest(".weather-tabs button");
+ if(tab){e.preventDefault();e.stopPropagation();weatherTab([...$$( ".weather-tabs button")].indexOf(tab))}
+});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeInfo();if((e.key==="Enter"||e.key===" ")&&document.activeElement?.matches(".data-card,.weather-card")){e.preventDefault();document.activeElement.click()}});
 function copyText(t){if(!t||t==="—")return;try{navigator.clipboard?.writeText(t)}catch{}}
 function weatherTab(i){
