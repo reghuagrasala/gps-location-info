@@ -14,7 +14,7 @@
 <title>My Location Info</title>
 <script>
 (async()=>{
-  const v="39";
+  const v="40";
   if(new URLSearchParams(location.search).get("reset-sw")===v){
     try{for(const r of await navigator.serviceWorker?.getRegistrations?.()||[])await r.unregister()}catch{}
     try{for(const k of await caches?.keys?.()||[])await caches.delete(k)}catch{}
@@ -114,9 +114,9 @@ window.addEventListener("DOMContentLoaded",()=>{
 <div id="infoSheet" class="info-sheet" hidden><div class="sheet-bg"></div><div class="sheet-box"><button id="sheetClose">×</button><div id="sheetSymbol">◎</div><h3 id="sheetTitle">Information</h3><p id="sheetText"></p></div></div>
 <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
 <script>
-if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js?v=39").catch(()=>{}))}
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js?v=40").catch(()=>{}))}
 </script>
-<script type="module" src="js/app.js?v=39"></script>
+<script type="module" src="js/app.js?v=40"></script>
 <script>
 window.addEventListener("DOMContentLoaded",()=>{
  setTimeout(()=>{
