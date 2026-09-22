@@ -83,3 +83,27 @@ body.detail-mode .topbar{display:none}body.detail-mode main{padding-top:env(safe
 .weather-tabs{width:100%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;overflow:visible;margin:12px 0 4px;padding:0}
 .weather-tabs button{min-width:0;padding:10px 5px;font-size:12px;white-space:nowrap}
 @media(max-width:390px){.weather-tabs{gap:3px}.weather-tabs button{font-size:10.5px;padding:10px 2px}}
+
+/* Home is a fixed viewport composition: no page scrolling in Safari or the installed PWA. */
+html:has(.home-view.active),body:has(.home-view.active),body:has(.home-view.active) main{
+  height:100dvh!important;
+  min-height:100dvh!important;
+  max-height:100dvh!important;
+  overflow:hidden!important;
+}
+body:has(.home-view.active) main{
+  padding-bottom:env(safe-area-inset-bottom)!important;
+}
+body:has(.home-view.active) .home-view.active{
+  height:calc(100dvh - clamp(66px,9dvh,82px) - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+  max-height:calc(100dvh - clamp(66px,9dvh,82px) - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+  overflow:hidden!important;
+}
+@media(max-height:720px){
+  body:has(.home-view.active) .home-view.active{
+    height:calc(100dvh - 64px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+    max-height:calc(100dvh - 64px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+  }
+}
+/* Weather page can scroll internally; Home cannot. */
+body:has(#weatherView.active) main{overflow:visible}
