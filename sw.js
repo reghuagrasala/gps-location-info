@@ -1,4 +1,4 @@
-const CACHE="my-location-info-v3";
+const CACHE="my-location-info-v4";
 const LOCAL_ASSETS=["./","./index.html","./styles.css","./manifest.json","./js/app.js","./js/globe.js","./js/gps.js","./js/coordinates.js","./js/astronomy.js","./js/digipin.js","./js/storage.js","./js/compass.js","./js/units.js","./js/services/weather.js","./js/services/location.js","./icons/icon.svg"];
 const EXTERNAL_ASSETS=["https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js","https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg","https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png","https://cdn.jsdelivr.net/npm/three-globe/example/img/night-sky.png"];
 self.addEventListener("install",event=>{event.waitUntil((async()=>{const cache=await caches.open(CACHE);await cache.addAll(LOCAL_ASSETS);await Promise.all(EXTERNAL_ASSETS.map(async url=>{try{const r=await fetch(new Request(url,{mode:"no-cors",cache:"force-cache"}));await cache.put(url,r)}catch{}}));await self.skipWaiting()})())});
