@@ -14,11 +14,11 @@ function normalise(d){
  const locality=d.locality||a.suburb||a.neighbourhood||a.hamlet||a.village||city;
  const label=[locality||city,state,country].filter((v,i,a)=>v&&a.indexOf(v)===i).join(", ");
  const address=[a.house_number&&a.house_number+" "+(a.road||""),d.locality||a.suburb,a.city||a.town||a.village,state,district,postcode,country].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(", ");
- return{ok:Boolean(label||address),label:label||city,address:address||label,postcode};
+ return{ok:Boolean(label||address),label:label||city,address:address||label,postcode,district,state,country,locality};
 }
 export async function reverseGeocode(lat,lon){
  if(!Number.isFinite(lat)||!Number.isFinite(lon)||!navigator.onLine)return{ok:false};
- try{const q=new URL("./functions/api/address.js",location.href);q.searchParams.set("lat",lat.toFixed(6));q.searchParams.set("lon",lon.toFixed(6));const d=await fetchJSON(q.toString(),9000);if(d?.ok)return d}catch{}
+ try{const q=new URL("/api/address",location.origin);q.searchParams.set("lat",lat.toFixed(6));q.searchParams.set("lon",lon.toFixed(6));const d=await fetchJSON(q.toString(),9000);if(d?.ok)return d}catch{}
  const providers=[
   async()=>{
    const u=new URL(PHOTON);u.searchParams.set("lat",lat);u.searchParams.set("lon",lon);
