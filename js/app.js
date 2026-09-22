@@ -81,7 +81,6 @@ $("#infoBtn").onclick=()=>alert("My Location Info\nThe Earth is a live WebGL glo
 onGPS(p=>{gps=p;renderAll();enrichPlace(p);if(location.hash==="#weather"&&!lastWeather)renderWeather();if(location.hash==="#address")enrichPlace(p)});window.addEventListener("online",()=>{renderAll();if(gps){enrichPlace(gps);if(location.hash==="#weather")renderWeather();if(location.hash==="#address")enrichPlace(gps)}});window.addEventListener("pageshow",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"));if(gps)renderAll()});window.addEventListener("resize",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"))});document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderAll()});
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});startGPS();show(location.hash.slice(1)||"home");
 
-
 function copyText(t){if(!t||t==="—")return;try{navigator.clipboard?.writeText(t)}catch{}}
 function weatherTab(i){
   $$(".weather-tabs button").forEach((x,n)=>x.classList.toggle("active",n===i));
