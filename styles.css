@@ -206,3 +206,90 @@ body.detail-mode .view{touch-action:pan-y}
 .info-sheet .sheet-box p{margin:0;line-height:1.55;color:#c8d9e8;font-size:15px}
 .info-sheet #sheetSymbol{font-size:32px;margin-bottom:4px}
 .info-sheet #sheetClose{position:absolute;right:10px;top:8px;width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;font-size:25px;cursor:pointer}
+
+
+/* v36: hard-fix viewport behavior */
+html{min-height:100%;overflow-x:hidden}
+body{min-height:100%;overflow-x:hidden}
+#home.active{
+  display:flex!important;
+  flex-direction:column!important;
+  height:calc(100dvh - clamp(66px,9dvh,82px) - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+  max-height:calc(100dvh - clamp(66px,9dvh,82px) - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+#home.active .globe-card{
+  flex:0 0 auto!important;
+  width:min(calc(100vw - 30px),390px)!important;
+  height:min(40dvh,390px)!important;
+  max-height:none!important;
+  margin:0 auto 5px!important;
+}
+#home.active .gps-diagnostic{display:none!important}
+#home.active .home-grid{
+  flex:0 0 auto!important;
+  width:100%!important;
+  margin-top:auto!important;
+  padding:0 0 max(2px,env(safe-area-inset-bottom))!important;
+  gap:5px!important;
+}
+#home.active .home-card{min-height:58px!important;height:58px!important;padding:6px 8px!important}
+#home.active .home-card b{font-size:14px!important}
+#home.active .home-card small{font-size:9.5px!important}
+#home.active .home-icon{font-size:22px!important}
+
+body.detail-mode{
+  height:auto!important;
+  min-height:100dvh!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  touch-action:pan-y!important;
+}
+body.detail-mode #app{
+  height:auto!important;
+  min-height:100dvh!important;
+  overflow:visible!important;
+}
+body.detail-mode main{
+  height:auto!important;
+  min-height:100dvh!important;
+  overflow:visible!important;
+  padding-bottom:calc(34px + env(safe-area-inset-bottom))!important;
+}
+body.detail-mode .view.active{
+  display:block!important;
+  min-height:calc(100dvh - 58px)!important;
+  overflow:visible!important;
+  padding-bottom:20px!important;
+}
+body.detail-mode .page-head{
+  position:sticky!important;
+  top:0!important;
+  z-index:50!important;
+}
+.page-head .back{
+  width:46px!important;
+  height:42px!important;
+  border-radius:14px!important;
+  position:relative!important;
+  font-size:0!important;
+  background:linear-gradient(145deg,#174a70,#0c2b45)!important;
+  border:1px solid rgba(110,205,255,.6)!important;
+}
+.page-head .back::before{content:"‹";font-size:30px;line-height:1}
+.page-head .back::after{
+  content:"HOME";
+  position:absolute;
+  left:50%;
+  top:100%;
+  transform:translate(-50%,3px);
+  font-size:7px;
+  font-weight:800;
+  letter-spacing:.5px;
+  color:#a9c8df;
+}
+@media(max-height:720px){
+ #home.active .globe-card{width:min(calc(100vw - 30px),330px)!important;height:min(36dvh,330px)!important}
+ #home.active .home-card{min-height:52px!important;height:52px!important}
+}
