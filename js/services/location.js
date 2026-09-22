@@ -1,14 +1,29 @@
+const BDC="https://api.bigdatacloud.net/data/reverse-geocode-client";
+const NOMINATIM="https://nominatim.openstreetmap.org/reverse";
+async function fetchJSON(url,ms=8000){
+ const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);
+ try{const r=await fetch(url,{method:"GET",cache:"no-store",signal:c.signal,headers:{"Accept":"application/json"}});if(!r.ok)throw new Error(String(r.status));return await r.json()}finally{clearTimeout(t)}
+}
+function normalise(d){
+ const a=d.address||{},city=d.city||d.town||d.village||d.locality||a.city||a.town||a.village||a.municipality||"";
+ const state=d.principalSubdivision||a.state||"";
+ const district=d.localityInfo?.administrative?.find?.(x=>/district|county/i.test(x.name||""))?.name||a.county||"";
+ const postcode=d.postcode||a.postcode||"";
+ const country=d.countryName||d.country||a.country||"";
+ const locality=d.locality||a.suburb||a.neighbourhood||a.hamlet||a.village||city;
+ const label=[locality||city,state,country].filter((v,i,a)=>v&&a.indexOf(v)===i).join(", ");
+ const address=[a.house_number&&a.house_number+" "+(a.road||""),d.locality||a.suburb,a.city||a.town||a.village,state,district,postcode,country].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(", ");
+ return{ok:Boolean(label||address),label:label||city,address:address||label,postcode};
+}
 export async function reverseGeocode(lat,lon){
-  if(!Number.isFinite(lat)||!Number.isFinite(lon)||!navigator.onLine)return{ok:false};
-  const url=new URL("https://api.bigdatacloud.net/data/reverse-geocode-client");
-  url.searchParams.set("latitude",lat);url.searchParams.set("longitude",lon);url.searchParams.set("localityLanguage","en");
-  const res=await fetch(url.toString(),{method:"GET",cache:"no-store"});
-  if(!res.ok)throw new Error("Reverse geocoding failed: "+res.status);
-  const d=await res.json();
-  if(d.lookupSource&&d.lookupSource!=="reverseGeocoding")return{ok:false};
-  const city=d.city||d.locality||"";
-  const country=d.countryName||"";
-  const label=[city,country].filter(Boolean).join(", ");
-  const address=[d.locality,d.city,d.principalSubdivision,d.postcode,d.countryName].filter((v,i,a)=>v&&a.indexOf(v)===i).join(", ");
-  return{ok:Boolean(label),label,address,postcode:d.postcode||""};
+ if(!Number.isFinite(lat)||!Number.isFinite(lon)||!navigator.onLine)return{ok:false};
+ try{
+  const u=new URL(BDC);u.searchParams.set("latitude",lat);u.searchParams.set("longitude",lon);u.searchParams.set("localityLanguage","en");
+  const d=await fetchJSON(u.toString());
+  if(d.lookupSource==="reverseGeocoding"||d.city||d.locality)return normalise(d);
+ }catch{}
+ try{
+  const u=new URL(NOMINATIM);u.searchParams.set("lat",lat);u.searchParams.set("lon",lon);u.searchParams.set("format","jsonv2");u.searchParams.set("zoom","18");u.searchParams.set("addressdetails","1");u.searchParams.set("accept-language","en");
+  return normalise(await fetchJSON(u.toString()));
+ }catch{return{ok:false}}
 }
