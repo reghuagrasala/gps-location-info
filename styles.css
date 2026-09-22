@@ -164,3 +164,16 @@ body.detail-mode .saved-scroll{overflow-x:hidden!important;overflow-y:hidden!imp
 body.detail-mode .weather-tabs{overflow-x:hidden!important;overflow-y:hidden!important}
 body.detail-mode .weather-tabs button{touch-action:pan-y}
 body.detail-mode .view{touch-action:pan-y}
+
+/* v26: tap any GPS or Weather data item for a contextual explanation */
+.data-card,.weather-card{cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:pan-y}
+.data-card:active,.weather-card:active{transform:scale(.985);border-color:rgba(125,255,105,.65)}
+.data-card:focus-visible,.weather-card:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.info-sheet{position:fixed;inset:0;z-index:100;display:none;align-items:flex-end;justify-content:center}
+.info-sheet.open{display:flex}
+.info-backdrop{position:absolute;inset:0;background:rgba(0,6,14,.68);backdrop-filter:blur(8px)}
+.info-dialog{position:relative;width:min(100%,560px);margin:0 10px max(10px,env(safe-area-inset-bottom));padding:24px 22px 22px;border:1px solid rgba(120,205,255,.5);border-radius:26px;background:linear-gradient(180deg,rgba(15,43,68,.99),rgba(5,22,38,.99));box-shadow:0 18px 55px rgba(0,0,0,.5);z-index:1}
+.info-close{position:absolute;right:12px;top:10px;width:42px;height:42px;border-radius:50%;background:rgba(35,72,101,.8);border:1px solid rgba(140,215,255,.35);font-size:28px}
+.info-visual{min-height:100px;display:grid;place-items:center;margin-bottom:8px;text-align:center}.info-symbol{font-size:52px;line-height:1;filter:drop-shadow(0 4px 12px rgba(120,210,255,.3))}.info-visual>small{color:#b9cfe5;margin-top:8px}
+.info-dialog h3{margin:0 45px 8px;font-size:23px}.info-dialog p{margin:0;color:#d7e8f7;font-size:15px;line-height:1.5}
+.moon-visual{display:grid;place-items:center;gap:5px}.moon-disc{width:82px;height:82px;border-radius:50%;background:#f4f0d5;box-shadow:0 0 25px rgba(255,240,180,.32);position:relative;overflow:hidden}.moon-disc i{position:absolute;inset:-4px;background:#0a2135;border-radius:50%}.moon-visual b{font-size:16px}.moon-visual small{color:#b9cfe5}
