@@ -107,3 +107,26 @@ body:has(.home-view.active) .home-view.active{
 }
 /* Weather page can scroll internally; Home cannot. */
 body:has(#weatherView.active) main{overflow:visible}
+
+/* v23: stable Home composition for Safari and standalone PWA */
+html,body,#app{height:100%;min-height:100dvh}
+body{overflow:hidden}
+.app{height:100dvh;min-height:100dvh;overflow:hidden}
+main{height:calc(100dvh - clamp(66px,9dvh,82px));overflow:hidden}
+.home-view{height:100%;min-height:0;overflow:hidden;padding-bottom:0;justify-content:space-between}
+.globe-card{flex:0 1 auto;width:min(100%,460px);height:min(56dvh,460px);max-height:calc(100% - 190px);margin:0 auto 8px}
+.home-grid{width:100%;margin-top:auto;padding-bottom:max(4px,env(safe-area-inset-bottom));flex:0 0 auto}
+.home-card{min-height:78px}
+@media(max-width:520px){.globe-card{width:min(calc(100vw - 24px),460px);height:min(calc(100vw - 24px),460px);max-height:calc(100% - 190px)}}
+@media(max-height:720px){.globe-card{width:min(calc(100vw - 24px),400px);height:min(calc(100vw - 24px),400px);max-height:calc(100% - 150px)}.home-card{min-height:68px}}
+@media(display-mode:standalone){
+ html,body,#app{height:100%;min-height:100dvh}
+ .app{height:100dvh}
+ .topbar{height:calc(clamp(66px,9dvh,82px) + env(safe-area-inset-top));padding-top:calc(env(safe-area-inset-top) + 5px)}
+ main{height:calc(100dvh - clamp(66px,9dvh,82px) - env(safe-area-inset-top));padding-bottom:0}
+ .home-view{height:100%;padding-bottom:0}
+ .home-grid{padding-bottom:max(8px,env(safe-area-inset-bottom))}
+}
+@media(display-mode:standalone) and (max-height:720px){
+ .globe-card{max-height:calc(100% - 150px)}
+}
