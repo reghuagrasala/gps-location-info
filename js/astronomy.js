@@ -3,3 +3,13 @@ export function solarDeclination(date=new Date()){const n=date.getTime()/8640000
 export function equationOfTime(date=new Date()){const start=Date.UTC(date.getUTCFullYear(),0,1);const doy=Math.floor((date.getTime()-start)/86400000)+1;const h=date.getUTCHours()+date.getUTCMinutes()/60+date.getUTCSeconds()/3600;const gamma=2*Math.PI/365*(doy-1+(h-12)/24);return 229.18*(0.000075+0.001868*Math.cos(gamma)-0.032077*Math.sin(gamma)-0.014615*Math.cos(2*gamma)-0.040849*Math.sin(2*gamma))}
 export function solarPosition(date=new Date()){const utc=date.getUTCHours()+date.getUTCMinutes()/60+date.getUTCSeconds()/3600;let lng=(12-utc)*15-equationOfTime(date)/4;while(lng>180)lng-=360;while(lng<-180)lng+=360;return{lng,lat:solarDeclination(date)}}
 export function solarAltitude(lat,lon,date=new Date()){const dec=solarDeclination(date)*R;const utc=date.getUTCHours()+date.getUTCMinutes()/60+date.getUTCSeconds()/3600;let h=((utc+lon/15-12)*15)*R;return Math.asin(Math.sin(lat*R)*Math.sin(dec)+Math.cos(lat*R)*Math.cos(dec)*Math.cos(h))/R}
+
+export function moonPhase(date=new Date()){
+ const synodic=29.530588853;
+ const known=Date.UTC(2000,0,6,18,14);
+ let age=((date.getTime()-known)/86400000)%synodic;
+ if(age<0)age+=synodic;
+ const names=["New Moon","Waxing Crescent","First Quarter","Waxing Gibbous","Full Moon","Waning Gibbous","Last Quarter","Waning Crescent"];
+ const index=Math.round(age/(synodic/8))%8;
+ return {age,name:names[index],illumination:(1-Math.cos(2*Math.PI*age/synodic))/2};
+}
