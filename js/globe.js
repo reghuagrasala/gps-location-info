@@ -48,6 +48,14 @@ export function initGlobe(element,{mini=false}={}){
  }catch{fallback(element);return null}
 }
 export function resizeGlobe(element){const g=instances.get(element);if(!g)return;try{const size=Math.max(1,Math.min(element.clientWidth,element.clientHeight));g.width(size).height(size)}catch{}}
+export function recenterGlobe(element,p){
+ const g=instances.get(element),s=state.get(element);
+ if(!g||!p||!Number.isFinite(p.lat)||!Number.isFinite(p.lon))return;
+ try{
+  g.pointOfView({lat:p.lat,lng:p.lon,altitude:s?.mini?2.55:2.28},700);
+  if(s)s.centered=true;
+ }catch{}
+}
 export function updateGlobe(element,p){
  const g=instances.get(element),s=state.get(element);if(!g||!s)return;
  updateSun(s);s.lastP=p||null;
