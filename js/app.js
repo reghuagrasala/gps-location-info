@@ -7,7 +7,7 @@ import{getWeather}from "./services/weather.js";
 import{reverseGeocode}from "./services/location.js";
 import{initGlobe,updateGlobe,resizeGlobe}from "./globe.js";
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-let gps=null,selected=null,currentHeading=null,lastGeo={lat:null,lon:null,time:0},geoBusy=false;
+let gps=null,selected=null,currentHeading=null,lastGeo={lat:null,lon:null,time:0},geoBusy=false,weatherBusy=false,lastWeather=null;
 const views={home:"homeView",position:"positionView",gps:"gpsView",address:"addressView",weather:"weatherView"};
 const homeGlobe=initGlobe($("#globe")),positionGlobe=initGlobe($("#positionGlobe"),{mini:true});
 function show(v){v=views[v]?v:"home";document.body.classList.toggle("detail-mode",v!=="home");$$(".view").forEach(x=>x.classList.remove("active"));$("#"+views[v]).classList.add("active");history.replaceState({v},"","#"+v);window.scrollTo(0,0);if(v==="position"){renderSaved();setTimeout(()=>resizeGlobe($("#positionGlobe")),50)}if(v==="address"){if(gps)enrichPlace(gps)}if(v==="weather"){if(gps)renderWeather()}renderAll()}
@@ -25,16 +25,45 @@ async function renderSaved(){const el=$("#savedPlaces"),list=await getPlaces().c
 const weatherLabels=["Feels like","Wind","Gusts","Visibility","Humidity","Clouds","UV Index","Air Quality (AQI)","Air Pressure","Dew Point","Precipitation","Chance of Rain","Sunrise","Sunset","Moon Phase"];
 async function renderWeather(){
  const g=$("#weatherGrid");
- g.innerHTML=weatherLabels.map(x=>'<button class="weather-card"><label>'+x+"</label><b>—</b><small>Available when connected</small></button>").join("");
- const r=await getWeather(gps?.lat,gps?.lon);
- $("#weatherUpdated").textContent=r.message+(r.provider?" · "+r.provider:"");
- if(!r.ok)return;
- const c=r.current||{},d=r.daily||{},code=Number(c.weather_code);
- const labels={0:"Clear sky",1:"Mainly clear",2:"Partly cloudy",3:"Overcast",45:"Fog",48:"Rime fog",51:"Light drizzle",53:"Drizzle",55:"Dense drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",71:"Light snow",73:"Snow",75:"Heavy snow",80:"Rain showers",81:"Rain showers",82:"Heavy showers",95:"Thunderstorm"};
- $("#weatherTemp").textContent=Number.isFinite(c.temperature_2m)?Math.round(c.temperature_2m)+"°C":"—";
- $("#weatherCondition").textContent=labels[code]||"Current conditions";
- const vals=[c.apparent_temperature,Number.isFinite(c.wind_speed_10m)?c.wind_speed_10m.toFixed(1)+" km/h":"—","—","—",c.relative_humidity_2m,c.cloud_cover,c.uv_index_max??"—","—",c.surface_pressure,"—",c.precipitation,"—",d.sunrise?.[0]||"—",d.sunset?.[0]||"—","—"];
- g.querySelectorAll(".weather-card").forEach((el,i)=>{el.querySelector("b").textContent=vals[i]??"—";el.querySelector("small").textContent="Open-Meteo fallback"});
+ if(!gps||!Number.isFinite(gps.lat)||!Number.isFinite(gps.lon)){
+  if(!g.children.length)g.innerHTML=weatherLabels.map(x=>'<button class="weather-card"><label>'+x+"</label><b>—</b><small>Waiting for GPS</small></button>").join("");
+  $("#weatherUpdated").textContent="Waiting for GPS";
+  return;
+ }
+ if(weatherBusy)return;
+ weatherBusy=true;
+ const old=lastWeather;
+ if(!g.children.length)g.innerHTML=weatherLabels.map(x=>'<button class="weather-card"><label>'+x+"</label><b>—</b><small>Fetching weather…</small></button>").join("");
+ $("#weatherUpdated").textContent=old?.message?old.message:"Fetching weather…";
+ try{
+  const r=await getWeather(gps.lat,gps.lon);
+  if(!r.ok){
+   $("#weatherUpdated").textContent=old?.message?old.message+" · refresh failed; last data retained":(r.message||"Weather unavailable — tap ↻ to try again.");
+   return;
+  }
+  lastWeather=r;
+  const c=r.current||{},d=r.daily||{},code=Number(c.weather_code);
+  const labels={0:"Clear sky",1:"Mainly clear",2:"Partly cloudy",3:"Overcast",45:"Fog",48:"Rime fog",51:"Light drizzle",53:"Drizzle",55:"Dense drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",71:"Light snow",73:"Snow",75:"Heavy snow",80:"Rain showers",81:"Rain showers",82:"Heavy showers",95:"Thunderstorm"};
+  $("#weatherTemp").textContent=Number.isFinite(c.temperature_2m)?Math.round(c.temperature_2m)+"°C":"—";
+  $("#weatherCondition").textContent=labels[code]||"Current conditions";
+  $("#weatherUpdated").textContent=(r.message||"Updated")+(r.provider?" · "+r.provider:"");
+  const vals=[
+   Number.isFinite(c.apparent_temperature)?c.apparent_temperature.toFixed(1)+"°C":"—",
+   Number.isFinite(c.wind_speed_10m)?c.wind_speed_10m.toFixed(1)+" km/h":"—",
+   "—","—",
+   Number.isFinite(c.relative_humidity_2m)?c.relative_humidity_2m+" %":"—",
+   Number.isFinite(c.cloud_cover)?c.cloud_cover+" %":"—",
+   "—","—",
+   Number.isFinite(c.surface_pressure)?Math.round(c.surface_pressure)+" hPa":"—",
+   "—",
+   Number.isFinite(c.precipitation)?c.precipitation+" mm":"—",
+   Number.isFinite(d.precipitation_probability_max?.[0])?d.precipitation_probability_max[0]+" %":"—",
+   d.sunrise?.[0]?new Date(d.sunrise[0]).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"—",
+   d.sunset?.[0]?new Date(d.sunset[0]).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"—",
+   "—"
+  ];
+  g.querySelectorAll(".weather-card").forEach((el,i)=>{el.querySelector("b").textContent=vals[i]??"—";el.querySelector("small").textContent=r.provider||"Updated"});
+ }finally{weatherBusy=false}
 }
 $$("[data-view]").forEach(b=>b.onclick=()=>show(b.dataset.view));$$("[data-back]").forEach(b=>b.onclick=()=>show("home"));window.addEventListener("popstate",()=>show(location.hash.slice(1)||"home"));
 $("#compassBtn").onclick=async()=>{const ok=await enableCompass();$("#compassStatus").textContent=ok?"Active":"Unavailable — tap again if iOS requests permission";$("#compassBtn").textContent=ok?"Compass Active":"Enable Compass"};
@@ -46,10 +75,10 @@ $("#deleteBtn").onclick=async()=>{if(!selected)return alert("Select a saved plac
 $("#copyAddress").onclick=async()=>{const t=$("#addressText").textContent;try{await navigator.clipboard.writeText(t)}catch{}};
 $("#addressRefresh").onclick=async()=>{if(!gps){$("#addressStatus").textContent="Waiting for GPS…";return}$("#addressStatus").textContent="Refreshing address…";lastGeo={lat:null,lon:null,time:0};await enrichPlace(gps,true);if(!gps.address)$("#addressStatus").textContent=navigator.onLine?"Address services did not return a result. Tap ↻ again.":"Connect to the Internet and tap ↻.";
 };
-$("#weatherRefresh").onclick=async e=>{e.preventDefault();e.stopPropagation();const b=$("#weatherRefresh");if(b.dataset.busy)return;b.dataset.busy="1";b.textContent="…";$("#weatherUpdated").textContent="Refreshing weather…";try{await renderWeather()}catch{$("#weatherUpdated").textContent="Weather could not be fetched."}finally{delete b.dataset.busy;b.textContent="↻"};};
+$("#weatherRefresh").onclick=async e=>{e.preventDefault();e.stopPropagation();const b=$("#weatherRefresh");if(b.dataset.busy)return;b.dataset.busy="1";b.textContent="…";try{await renderWeather()}catch{$("#weatherUpdated").textContent=lastWeather?.message||"Weather could not be fetched."}finally{delete b.dataset.busy;b.textContent="↻"};};
 
 $("#infoBtn").onclick=()=>alert("My Location Info\nThe Earth is a live WebGL globe. GPS remains the authoritative position and core GPS functions work offline.");$("#settingsBtn").onclick=()=>alert("Settings will include units, compass behavior, API services and backup.");
-onGPS(p=>{gps=p;renderAll();enrichPlace(p);if(location.hash==="#weather")renderWeather();if(location.hash==="#address")enrichPlace(p)});window.addEventListener("online",()=>{renderAll();if(gps){enrichPlace(gps);if(location.hash==="#weather")renderWeather();if(location.hash==="#address")enrichPlace(gps)}});window.addEventListener("pageshow",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"));if(gps)renderAll()});window.addEventListener("resize",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"))});document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderAll()});
+onGPS(p=>{gps=p;renderAll();enrichPlace(p);if(location.hash==="#weather"&&!lastWeather)renderWeather();if(location.hash==="#address")enrichPlace(p)});window.addEventListener("online",()=>{renderAll();if(gps){enrichPlace(gps);if(location.hash==="#weather")renderWeather();if(location.hash==="#address")enrichPlace(gps)}});window.addEventListener("pageshow",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"));if(gps)renderAll()});window.addEventListener("resize",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"))});document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderAll()});
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});startGPS();show(location.hash.slice(1)||"home");
 
 function copyText(t){if(!t||t==="—")return;try{navigator.clipboard?.writeText(t)}catch{}}
