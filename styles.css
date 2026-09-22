@@ -23,8 +23,16 @@ body.detail-mode .topbar{display:none}body.detail-mode main{padding-top:env(safe
 
 /* Compass rotates as a frame/scale, with no needle. */
 .compass-ring{overflow:hidden}
-.compass-scale{position:absolute;inset:0;border-radius:50%;transform:rotate(0deg);transition:transform .18s linear;will-change:transform}
-.compass-scale span{position:absolute;font-weight:800;font-size:18px}
-.compass-scale span:nth-child(1){top:13px;left:50%;transform:translateX(-50%);color:#ff6c79}.compass-scale span:nth-child(2){right:14px;top:50%;transform:translateY(-50%)}.compass-scale span:nth-child(3){bottom:13px;left:50%;transform:translateX(-50%)}.compass-scale span:nth-child(4){left:14px;top:50%;transform:translateY(-50%)}
+
+
+
 .compass-center{position:relative;z-index:2;display:grid;place-items:center;width:45%;aspect-ratio:1;border-radius:50%;background:rgba(5,24,43,.42);backdrop-filter:blur(2px)}
 @media(max-width:520px){.globe-card{width:min(100%,calc(100vw - 18px));max-height:calc(100dvh - 290px)}}
+
+/* Compass dial rotates; center degree/direction remain upright. */
+.compass-ring{overflow:hidden}
+.compass-dial{position:absolute;inset:0;border-radius:50%;transform:rotate(0deg);transition:transform .12s linear;will-change:transform}
+.compass-dial>span{position:absolute;font-weight:800;font-size:18px}
+.compass-dial>span:nth-child(1){top:13px;left:50%;transform:translateX(-50%);color:#ff6c79}.compass-dial>span:nth-child(2){right:14px;top:50%;transform:translateY(-50%)}.compass-dial>span:nth-child(3){bottom:13px;left:50%;transform:translateX(-50%)}.compass-dial>span:nth-child(4){left:14px;top:50%;transform:translateY(-50%)}
+.compass-center{transform:none!important}
+.earth-marker-copy{background:rgba(2,14,25,.58);padding:5px 7px;border-radius:10px;backdrop-filter:blur(6px)}
