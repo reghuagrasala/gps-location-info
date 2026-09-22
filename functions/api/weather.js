@@ -1,5 +1,5 @@
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{"content-type":"application/json","cache-control":"no-store"}})}
-async function get(url){const c=new AbortController(),t=setTimeout(()=>c.abort(),9000);try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw new Error(String(r.status));return await r.json()}finally{clearTimeout(t)}}
+async function get(url){const c=new AbortController(),t=setTimeout(()=>c.abort(),7000);try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw new Error(String(r.status));return await r.json()}finally{clearTimeout(t)}}
 export async function onRequestGet({request}){
  const u=new URL(request.url),lat=Number(u.searchParams.get("lat")),lon=Number(u.searchParams.get("lon"));
  if(!Number.isFinite(lat)||!Number.isFinite(lon))return json({ok:false,message:"Invalid coordinates"},400);
