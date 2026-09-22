@@ -10,7 +10,11 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let gps=null,selected=null,currentHeading=null,lastGeo={lat:null,lon:null,time:0},geoBusy=false,weatherBusy=false,lastWeather=null,lastWeatherAt=0,weatherRequestId=0;
 const views={home:"homeView",position:"positionView",gps:"gpsView",address:"addressView",weather:"weatherView"};
 const homeGlobe=initGlobe($("#globe")),positionGlobe=initGlobe($("#positionGlobe"),{mini:true});
-function show(v){v=views[v]?v:"home";document.body.classList.toggle("detail-mode",v!=="home");$$(".view").forEach(x=>x.classList.remove("active"));$("#"+views[v]).classList.add("active");history.replaceState({v},"","#"+v);window.scrollTo(0,0);if(v==="position"){renderSaved();setTimeout(()=>{resizeGlobe($("#positionGlobe"));if(gps)recenterGlobe($("#positionGlobe"),gps)},50)}if(v==="address"){if(gps)enrichPlace(gps)}if(v==="weather"){if(gps)renderWeather(true)}if(v==="home"&&gps){setTimeout(()=>{restoreGlobe($("#globe"));recenterGlobe($("#globe"),gps)},60)}
+function show(v){v=views[v]?v:"home";document.body.classList.toggle("detail-mode",v!=="home");$$(".view").forEach(x=>x.classList.remove("active"));$("#"+views[v]).classList.add("active");history.replaceState({v},"","#"+v);window.scrollTo(0,0);if(v==="position"){renderSaved();setTimeout(()=>{resizeGlobe($("#positionGlobe"));if(gps)recenterGlobe($("#positionGlobe"),gps)},50)}if(v==="address"){if(gps)enrichPlace(gps)}if(v==="weather"){if(gps)renderWeather(true)}if(v==="home"&&gps){
+  setTimeout(()=>restoreGlobe($("#globe")),40);
+  setTimeout(()=>{restoreGlobe($("#globe"));recenterGlobe($("#globe"),gps)},220);
+  setTimeout(()=>recenterGlobe($("#globe"),gps),700);
+}
 renderAll()}
 function card(a,b){return'<div class="data-card"><label>'+a+"</label><b>"+b+"</b></div>"}
 function placeName(p){if(!p)return"Waiting for GPS…";if(p.place)return p.place;if(p.lat>=10.1&&p.lat<=10.85&&p.lon>=75.9&&p.lon<=76.8)return"Thrissur";if(isIndiaForDigiPin(p.lat,p.lon))return"India";return"Location"}
@@ -122,7 +126,14 @@ $("#deleteBtn").onclick=async e=>{
  }
 };
 $("#infoBtn").onclick=()=>alert("My Location Info\nThe Earth is a live WebGL globe. GPS remains the authoritative position and core GPS functions work offline.");$("#settingsBtn").onclick=()=>alert("Settings will include units, compass behavior, API services and backup.");
-onGPS(p=>{gps=p;renderAll();enrichPlace(p);if((!lastWeather||Date.now()-lastWeatherAt>300000)&&navigator.onLine)renderWeather(true);if(location.hash==="#address")enrichPlace(p)});window.addEventListener("online",()=>{renderAll();if(gps){enrichPlace(gps,true);lastWeather=null;lastWeatherAt=0;renderWeather()}});window.addEventListener("pageshow",()=>{restoreGlobe($("#globe"));resizeGlobe($("#positionGlobe"));if(gps)renderAll()});
+onGPS(p=>{gps=p;renderAll();enrichPlace(p);if((!lastWeather||Date.now()-lastWeatherAt>300000)&&navigator.onLine)renderWeather(true);if(location.hash==="#address")enrichPlace(p)});window.addEventListener("online",()=>{renderAll();if(gps){enrichPlace(gps,true);lastWeather=null;lastWeatherAt=0;renderWeather()}});window.addEventListener("pageshow",()=>{
+  restoreGlobe($("#globe"));
+  resizeGlobe($("#positionGlobe"));
+  if(gps){
+    renderAll();
+    if(location.hash==="#home")setTimeout(()=>recenterGlobe($("#globe"),gps),250);
+  }
+});
 window.addEventListener("resize",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"))});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){restoreGlobe($("#globe"));resizeGlobe($("#positionGlobe"));renderAll()}});
 window.addEventListener("orientationchange",()=>setTimeout(()=>restoreGlobe($("#globe")),180));
