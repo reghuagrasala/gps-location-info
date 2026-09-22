@@ -39,18 +39,18 @@ export function initGlobe(element,{mini=false}={}){
   try{const m=g.globeMaterial();m.color?.set?.("#ffffff");m.shininess=6;m.opacity=1;m.transparent=false}catch{}
   const controls=g.controls();controls.enableZoom=true;controls.enablePan=false;controls.enableDamping=true;controls.dampingFactor=.08;controls.autoRotate=false;controls.minDistance=120;controls.maxDistance=420;
   g.pointOfView({lat:20,lng:78,altitude:mini?2.55:2.28},0);
-  const s={g,mini,element,marker:null,centered:false,ready:false,sun:null,isDay:true};
+  const s={g,mini,element,marker:null,centered:false,ready:false,sun:null,isDay:true,lastP:null};
   state.set(element,s);instances.set(element,g);
   g.onGlobeReady?.(()=>{s.ready=true;updateSun(s);try{g.renderer().setPixelRatio(Math.min(window.devicePixelRatio||1,2))}catch{}});
   controls.addEventListener("change",()=>{});
-  setTimeout(()=>resizeGlobe(element),60);
+  setTimeout(()=>resizeGlobe(element),60);setInterval(()=>{updateSun(s);if(s.lastP)updateStatus(s,s.lastP)},30000);
   return g;
  }catch{fallback(element);return null}
 }
 export function resizeGlobe(element){const g=instances.get(element);if(!g)return;try{const size=Math.max(1,Math.min(element.clientWidth,element.clientHeight));g.width(size).height(size)}catch{}}
 export function updateGlobe(element,p){
  const g=instances.get(element),s=state.get(element);if(!g||!s)return;
- updateSun(s);
+ updateSun(s);s.lastP=p||null;
  if(!p||!Number.isFinite(p.lat)||!Number.isFinite(p.lon)){if(s.marker){g.pointsData([]);g.ringsData([]);g.htmlElementsData([])}return}
  const place=p.place||"Thrissur",d=new Date(p.time||Date.now()),time=d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),date=d.toLocaleDateString([],{day:"2-digit",month:"short",year:"numeric"});
  if(!s.marker){
