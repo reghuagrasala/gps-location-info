@@ -43,3 +43,31 @@ body.detail-mode .topbar{display:none}body.detail-mode main{padding-top:env(safe
 .globe-host canvas{border-radius:50%;overflow:hidden}
 
 .earth-marker{background:transparent!important}.earth-marker-dot{transform:translateZ(0)}
+
+/* Final mobile globe sizing: keep the complete circular globe inside the Home composition. */
+.globe-card{
+  flex:0 0 min(56dvh,460px);
+  width:min(100%,460px);
+  height:min(56dvh,460px);
+  max-width:460px;
+  max-height:460px;
+  margin:0 auto 10px;
+}
+.globe-host{width:100%;height:100%;max-width:100%;max-height:100%}
+.globe-status{bottom:10px;z-index:5;font-size:11px;white-space:nowrap}
+@media(max-width:520px){
+  .globe-card{
+    width:min(calc(100vw - 24px),460px);
+    height:min(calc(100vw - 24px),460px);
+    flex-basis:min(calc(100vw - 24px),460px);
+    max-height:none;
+  }
+}
+@media(max-height:720px){
+  .globe-card{
+    width:min(calc(100vw - 24px),400px);
+    height:min(calc(100vw - 24px),400px);
+    flex-basis:min(calc(100vw - 24px),400px);
+    max-height:none;
+  }
+}
