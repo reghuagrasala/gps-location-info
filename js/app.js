@@ -1,4 +1,4 @@
-import{startGPS,retryGPS,onGPS,diagnostic}from "./gps.js?v=39";
+import{startGPS,retryGPS,onGPS,diagnostic}from "./gps.js?v=40";
 import{dms,plusCode,bearingName}from "./coordinates.js";
 import{getDigiPin,isIndiaForDigiPin}from "./digipin.js";
 import{enableCompass,onHeading,isActive}from "./compass.js";
@@ -137,7 +137,7 @@ function show(id){
  ($(id)||$("home")).classList.add("active");
  history.replaceState({}, "", "#"+id);document.body.classList.toggle("detail-mode",id!=="home");window.scrollTo(0,0);
  if(id==="position")setTimeout(()=>{resizeGlobe($("positionGlobe"));if(gps)recenterGlobe($("positionGlobe"),gps,true)},300);
- if(id==="home"){restoreGlobe($("globe"));if(gps){setTimeout(()=>{resizeGlobe($("globe"));recenterGlobe($("globe"),gps,true)},500);setTimeout(()=>recenterGlobe($("globe"),gps,true),1200)}}
+ if(id==="home"){restoreGlobe($("globe"));if(gps){[300,700,1300].forEach(ms=>setTimeout(()=>{resizeGlobe($("globe"));recenterGlobe($("globe"),gps,true)},ms))}}
  if(id==="weather")refreshWeather();
  render();
 }
