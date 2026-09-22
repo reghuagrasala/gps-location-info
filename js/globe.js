@@ -33,7 +33,7 @@ export function initGlobe(element,{mini=false}={}){
    .globeImageUrl(EARTH_DAY).bumpImageUrl(BUMP).backgroundImageUrl(SKY).backgroundColor("rgba(0,0,0,0)")
    .showAtmosphere(true).atmosphereColor("#1a3a6e").atmosphereAltitude(mini?.10:.18)
    .globeCurvatureResolution(mini?6:4).showGraticules(false)
-   .pointsData([]).pointColor(()=>"#00ff88").pointAltitude(.025).pointRadius(mini?.20:.32).pointResolution(12).pointsMerge(true)
+   .pointsData([]).pointColor(()=>"#00ff88").pointAltitude(.004).pointRadius(mini?.10:.16).pointResolution(12).pointsMerge(true)
    .ringsData([]).ringColor(()=>["rgba(0,255,136,.95)","rgba(0,255,136,0)"]).ringMaxRadius(1.8).ringPropagationSpeed(1.8).ringRepeatPeriod(1300).ringAltitude(.008)
    .enablePointerInteraction(true);
   try{const m=g.globeMaterial();m.color?.set?.("#ffffff");m.shininess=6;m.opacity=1;m.transparent=false}catch{}
@@ -55,7 +55,7 @@ export function updateGlobe(element,p){
  const place=p.place||"Thrissur",d=new Date(p.time||Date.now()),time=d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),date=d.toLocaleDateString([],{day:"2-digit",month:"short",year:"numeric"});
  if(!s.marker){
   s.marker=makeMarker();
-  g.htmlElementsData([{lat:p.lat,lng:p.lon,el:s.marker}]).htmlLat(d=>d.lat).htmlLng(d=>d.lng).htmlAltitude(.015).htmlElement(d=>d.el).htmlTransitionDuration(0);
+  g.htmlElementsData([{lat:p.lat,lng:p.lon,el:s.marker}]).htmlLat(d=>d.lat).htmlLng(d=>d.lng).htmlAltitude(.004).htmlElement(d=>d.el).htmlTransitionDuration(0);
  }else g.htmlElementsData([{lat:p.lat,lng:p.lon,el:s.marker}]);
  const b=s.marker.querySelector("b"),strong=s.marker.querySelector("strong"),small=s.marker.querySelector("small");
  if(b)b.textContent=place;if(strong)strong.textContent=time;if(small)small.textContent=date;
