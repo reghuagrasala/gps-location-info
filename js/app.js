@@ -172,4 +172,12 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){restoreGl
 window.addEventListener("resize",()=>{resizeGlobe($("globe"));resizeGlobe($("positionGlobe"))});
 window.addEventListener("online",()=>{if(gps){refreshAddress(true);refreshWeather()}});
 window.addEventListener("offline",()=>{ $("globeStatus").textContent="GPS active · Offline · Drag · pinch · zoom"});
-bind();updateGPSDiagnostic(null);initGlobe($("globe"),{mini:false});initGlobe($("positionGlobe"),{mini:true});render();startGPS();
+bind();
+updateGPSDiagnostic(null);
+try{initGlobe($("globe"),{mini:false})}catch(e){$("globeStatus").textContent="Globe unavailable · GPS independent";$("gpsDiagEvent").textContent="Globe error · "+(e?.message||e)}
+try{initGlobe($("positionGlobe"),{mini:true})}catch(e){}
+render();
+try{startGPS()}catch(e){
+ $("gpsDiagEvent").textContent="GPS startup error · "+(e?.message||e);
+ $("globeStatus").textContent="GPS startup error · Tap RETRY GPS";
+}
