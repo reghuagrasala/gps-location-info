@@ -1,4 +1,4 @@
-import{startGPS,retryGPS,onGPS,diagnostic}from "./gps.js";
+import{startGPS,retryGPS,onGPS,diagnostic}from "./gps.js?v=29";
 import{dms,plusCode,bearingName}from "./coordinates.js";
 import{getDigiPin,isIndiaForDigiPin}from "./digipin.js";
 import{enableCompass,onHeading,isActive}from "./compass.js";
