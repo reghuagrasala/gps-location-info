@@ -8,7 +8,16 @@ export async function onRequestGet({request}){
   q.searchParams.set("current","temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m,cloud_cover,surface_pressure,is_day");
   q.searchParams.set("hourly","temperature_2m,relative_humidity_2m,dew_point_2m,precipitation_probability,visibility,wind_gusts_10m,uv_index,weather_code,wind_speed_10m");q.searchParams.set("daily","weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max");q.searchParams.set("timezone","auto");q.searchParams.set("forecast_days","3");
   const d=await get(q);if(!d.current)throw new Error("No current weather");
-  const h=d.hourly||{},now=new Date(d.current.time||Date.now()),times=h.time||[];let i=times.findIndex(t=>new Date(t)>=now);if(i<0)i=0;const current={...d.current};for(const k of ["dew_point_2m","visibility","wind_gusts_10m","uv_index"]){if(!Number.isFinite(current[k])&&Array.isArray(h[k])&&Number.isFinite(h[k][i]))current[k]=h[k][i]}return json({ok:true,provider:"Open-Meteo",current,hourly:h,daily:d.daily||{},message:"Updated "+new Date(d.current.time).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})});
+  let airQuality=null;
+  try{
+   const aq=new URL("https://air-quality-api.open-meteo.com/v1/air-quality");
+   aq.searchParams.set("latitude",lat.toFixed(6));aq.searchParams.set("longitude",lon.toFixed(6));
+   aq.searchParams.set("current","us_aqi,european_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,ozone");
+   aq.searchParams.set("timezone","auto");
+   const ad=await get(aq);if(ad?.current)airQuality=ad.current;
+  }catch{}
+
+  const h=d.hourly||{},now=new Date(d.current.time||Date.now()),times=h.time||[];let i=times.findIndex(t=>new Date(t)>=now);if(i<0)i=0;const current={...d.current};for(const k of ["dew_point_2m","visibility","wind_gusts_10m","uv_index"]){if(!Number.isFinite(current[k])&&Array.isArray(h[k])&&Number.isFinite(h[k][i]))current[k]=h[k][i]}return json({ok:true,provider:"Open-Meteo",current,hourly:h,daily:d.daily||{},airQuality,message:"Updated "+new Date(d.current.time).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})});
  }catch{
   try{
    const q=new URL("https://www.7timer.info/bin/api.pl");q.searchParams.set("lon",lon.toFixed(3));q.searchParams.set("lat",lat.toFixed(3));q.searchParams.set("product","civillight");q.searchParams.set("output","json");
