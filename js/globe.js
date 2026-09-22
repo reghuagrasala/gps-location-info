@@ -4,7 +4,7 @@ const BUMP="https://unpkg.com/three-globe/example/img/earth-topology.png";
 const SKY="https://unpkg.com/three-globe/example/img/night-sky.png";
 const instances=new Map(),state=new WeakMap();
 function fallback(el){if(!el)return;el.classList.add("globe-fallback-host");if(!el.querySelector(".globe-fallback"))el.insertAdjacentHTML("beforeend",'<div class="globe-fallback">3D Earth is unavailable here.<br><small>GPS coordinates continue to work.</small></div>')}
-function makeMarker(){const el=document.createElement("div");el.className="earth-marker";el.innerHTML='<span class="earth-marker-dot"></span><span class="earth-marker-copy"><b></b><strong></strong><small></small></span>';return el}
+function makeMarker(){const el=document.createElement("div");el.className="earth-marker";el.innerHTML='<span class="earth-marker-copy"><b></b><strong></strong><small></small></span>';return el}
 function updateSun(s){
  try{
   const g=s.g,now=new Date(),sun=solarPosition(now),lights=g.lights?.(),dir=lights?.find(x=>x&&x.isDirectionalLight);
@@ -33,7 +33,7 @@ export function initGlobe(element,{mini=false}={}){
    .globeImageUrl(EARTH_DAY).bumpImageUrl(BUMP).backgroundImageUrl(SKY).backgroundColor("rgba(0,0,0,0)")
    .showAtmosphere(true).atmosphereColor("#1a3a6e").atmosphereAltitude(mini?.10:.18)
    .globeCurvatureResolution(mini?6:4).showGraticules(false)
-   .pointsData([]).pointColor(()=>"#00ff88").pointAltitude(.004).pointRadius(mini?.10:.16).pointResolution(12).pointsMerge(true)
+   .pointsData([]).pointColor(()=>"#00ff88").pointAltitude(.006).pointRadius(mini?.12:.20).pointResolution(12).pointsMerge(true)
    .ringsData([]).ringColor(()=>["rgba(0,255,136,.95)","rgba(0,255,136,0)"]).ringMaxRadius(1.8).ringPropagationSpeed(1.8).ringRepeatPeriod(1300).ringAltitude(.008)
    .enablePointerInteraction(true);
   try{const m=g.globeMaterial();m.color?.set?.("#ffffff");m.shininess=6;m.opacity=1;m.transparent=false}catch{}
