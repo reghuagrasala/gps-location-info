@@ -12,12 +12,24 @@
 <link rel="apple-touch-icon" href="icons/icon.svg">
 <link rel="stylesheet" href="styles.css">
 <title>My Location Info</title>
+<script>
+(async()=>{
+  const v="28";
+  if(new URLSearchParams(location.search).get("reset-sw")===v){
+    try{for(const r of await navigator.serviceWorker?.getRegistrations?.()||[])await r.unregister()}catch{}
+    try{for(const k of await caches?.keys?.()||[])await caches.delete(k)}catch{}
+    history.replaceState({}, "", location.pathname);
+    location.reload();
+    return;
+  }
+})();
+</script>
 </head>
 <body>
 <div id="app">
 <header class="topbar">
   <button class="icon-btn" id="settingsBtn" aria-label="GPS settings">⚙</button>
-  <div class="brand"><h1>My Location Info</h1><p>GPS updates offline</p><button id="installBtn" class="install-pill" hidden>Install App</button></div>
+  <div class="brand"><h1>My Location Info</h1><p>GPS updates offline</p><small class="build-version">GPS Diagnostic v28</small><button id="installBtn" class="install-pill" hidden>Install App</button></div>
   <button class="icon-btn" id="infoBtn" aria-label="About">ⓘ</button>
 </header>
 
@@ -65,6 +77,9 @@
 
 <div id="infoSheet" class="sheet" hidden><div class="sheet-bg"></div><div class="sheet-box"><button id="sheetClose">×</button><div id="sheetSymbol">◎</div><h3 id="sheetTitle">Information</h3><p id="sheetText"></p></div></div>
 <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
-<script type="module" src="js/app.js"></script>
+<script>
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js?v=28").catch(()=>{}))}
+</script>
+<script type="module" src="js/app.js?v=28"></script>
 </body>
 </html>
