@@ -96,3 +96,38 @@ body.detail-mode .topbar{display:none}body.detail-mode main{padding-top:env(safe
 .action-bar{z-index:50}
 .action-bar button{position:relative;z-index:51;-webkit-user-select:none;user-select:none}
 .weather-tabs,.weather-tabs button{pointer-events:auto;touch-action:manipulation}
+
+/* Home composition: centered Earth in the upper/middle area, navigation cards anchored at the bottom. */
+.home-view.active{
+  justify-content:flex-start;
+}
+.home-view .globe-card{
+  flex:0 0 min(50dvh,420px);
+  width:min(calc(100vw - 28px),420px);
+  height:min(50dvh,420px);
+  margin:6px auto 0;
+}
+.home-view .home-grid{
+  width:100%;
+  margin-top:auto;
+  padding-bottom:2px;
+  gap:9px;
+}
+@media(max-width:520px){
+  .home-view .globe-card{
+    width:min(calc(100vw - 28px),390px);
+    height:min(calc(100vw - 28px),390px);
+    flex-basis:min(calc(100vw - 28px),390px);
+    margin-top:4px;
+  }
+  .home-view .home-grid{
+    margin-top:auto;
+  }
+}
+@media(max-height:720px){
+  .home-view .globe-card{
+    width:min(calc(100vw - 28px),350px);
+    height:min(calc(100vw - 28px),350px);
+    flex-basis:min(calc(100vw - 28px),350px);
+  }
+}
