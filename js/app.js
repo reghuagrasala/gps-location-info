@@ -1,4 +1,4 @@
-import{startGPS,retryGPS,onGPS}from "./gps.js";
+import{startGPS,retryGPS,onGPS,diagnostic}from "./gps.js";
 import{dms,plusCode,bearingName}from "./coordinates.js";
 import{getDigiPin,isIndiaForDigiPin}from "./digipin.js";
 import{enableCompass,onHeading,isActive}from "./compass.js";
@@ -19,6 +19,29 @@ function distance(a,b,c,d){
 function placeName(){
  return lastAddress?.locality||lastAddress?.label||"Location";
 }
+function updateGPSDiagnostic(p){
+ const box=$("gpsDiagnostic");if(!box)return;
+ const api=navigator.geolocation?"AVAILABLE":"UNSUPPORTED";
+ const secure=window.isSecureContext?"secure":"NOT secure";
+ $("gpsDiagApi").textContent="API: "+api+" · Context: "+secure;
+ if(navigator.permissions?.query){
+  navigator.permissions.query({name:"geolocation"}).then(x=>{
+   $("gpsDiagPermission").textContent="Permission: "+x.state;
+  }).catch(()=>{$("gpsDiagPermission").textContent="Permission: unavailable"});
+ }else $("gpsDiagPermission").textContent="Permission: unavailable";
+ const d=diagnostic(),at=d.lastEventAt?new Date(d.lastEventAt).toLocaleTimeString():"—";
+ if(p?.error){
+  $("gpsDiagEvent").textContent=(p.errorName||"ERROR")+" · "+p.source+" · "+at;
+  box.classList.remove("ok");box.classList.add("error");
+ }else if(Number.isFinite(p?.lat)){
+  $("gpsDiagEvent").textContent="SUCCESS · "+(p.source||"GPS")+" · accuracy "+(Number.isFinite(p.accuracy)?Math.round(p.accuracy)+" m":"—")+" · "+at;
+  box.classList.add("ok");box.classList.remove("error");
+ }else{
+  $("gpsDiagEvent").textContent=d.starting?"Request sent · waiting for callback…":"No GPS callback yet";
+  box.classList.remove("ok","error");
+ }
+}
+
 
 function render(){
  const p=gps;
@@ -124,6 +147,7 @@ function bind(){
  document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>show(b.dataset.view));
  document.querySelectorAll("[data-back]").forEach(b=>b.onclick=()=>show("home"));
  $("gpsOverlay").onclick=()=>retryGPS();
+ $("gpsRetry").onclick=()=>retryGPS();
  $("globe").onclick=()=>{if(!gps)retryGPS()};
  $("addressRefresh").onclick=()=>refreshAddress(true);
  $("weatherRefresh").onclick=()=>refreshWeather();
@@ -137,6 +161,7 @@ function bind(){
  $("sheetClose").onclick=()=>$("infoSheet").hidden=true;$("infoSheet").querySelector(".sheet-bg").onclick=()=>$("infoSheet").hidden=true;
 }
 onGPS(p=>{
+ updateGPSDiagnostic(p);
  const moved=gps&&Number.isFinite(gps.lat)&&Number.isFinite(gps.lon)&&Number.isFinite(p.lat)&&Number.isFinite(p.lon)&&distance(gps.lat,gps.lon,p.lat,p.lon)>=150;
  if(moved)lastAddress=null;
  gps=p;render();
@@ -147,4 +172,4 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){restoreGl
 window.addEventListener("resize",()=>{resizeGlobe($("globe"));resizeGlobe($("positionGlobe"))});
 window.addEventListener("online",()=>{if(gps){refreshAddress(true);refreshWeather()}});
 window.addEventListener("offline",()=>{ $("globeStatus").textContent="GPS active · Offline · Drag · pinch · zoom"});
-bind();initGlobe($("globe"),{mini:false});initGlobe($("positionGlobe"),{mini:true});render();startGPS();
+bind();updateGPSDiagnostic(null);initGlobe($("globe"),{mini:false});initGlobe($("positionGlobe"),{mini:true});render();startGPS();
