@@ -86,3 +86,7 @@ body.detail-mode .topbar{display:none}body.detail-mode main{padding-top:env(safe
 #addressData .data-card{min-height:76px}
 .data-card,.weather-card{cursor:pointer}
 .data-card:active,.weather-card:active{transform:scale(.985)}
+
+/* Position profile globe: keep the globe clean; location text belongs beside it. */
+.mini-globe .earth-marker-copy{display:none!important}
+.mini-globe .earth-marker{gap:0!important}
