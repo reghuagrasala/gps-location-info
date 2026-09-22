@@ -106,7 +106,8 @@ $("#saveBtn").onclick=async e=>{
 $("#shareBtn").onclick=async e=>{
  e.preventDefault();e.stopPropagation();
  if(!gps){actionNote("Waiting for GPS…");return}
- const text="My Location Info\n"+gps.lat.toFixed(6)+", "+gps.lon.toFixed(6);
+ const text="My Location Info
+"+gps.lat.toFixed(6)+", "+gps.lon.toFixed(6);
  try{
   if(navigator.share)await navigator.share({title:"My Location Info",text});
   else if(navigator.clipboard)await navigator.clipboard.writeText(text);
@@ -126,7 +127,8 @@ $("#deleteBtn").onclick=async e=>{
   catch{actionNote("Could not delete saved place")}
  }
 };
-$("#infoBtn").onclick=()=>alert("My Location Info\nThe Earth is a live WebGL globe. GPS remains the authoritative position and core GPS functions work offline.");$("#settingsBtn").onclick=()=>alert("Settings will include units, compass behavior, API services and backup.");
+$("#infoBtn").onclick=()=>alert("My Location Info
+The Earth is a live WebGL globe. GPS remains the authoritative position and core GPS functions work offline.");$("#settingsBtn").onclick=()=>alert("Settings will include units, compass behavior, API services and backup.");
 onGPS(p=>{gps=p;renderAll();enrichPlace(p);if((!lastWeather||Date.now()-lastWeatherAt>300000)&&navigator.onLine)renderWeather(true);if(location.hash==="#address")enrichPlace(p)});window.addEventListener("online",()=>{renderAll();if(gps){enrichPlace(gps,true);lastWeather=null;lastWeatherAt=0;renderWeather()}});window.addEventListener("pageshow",()=>{
   restoreGlobe($("#globe"));
   resizeGlobe($("#positionGlobe"));
@@ -215,7 +217,9 @@ function showInfo(label,value){
  v.innerHTML=m?moonVisual(m):'<div class="info-symbol">'+info[2]+'</div><small>'+String(value||"Current value")+'</small>';
  sheet.classList.add("open");sheet.setAttribute("aria-hidden","false");
 }
-function closeInfo(){const s=$("#infoSheet");if(s){s.classList.remove("open");s.setAttribute("aria-hidden","true")}}\n\n
+function closeInfo(){const s=$("#infoSheet");if(s){s.classList.remove("open");s.setAttribute("aria-hidden","true")}}
+
+
 function copyText(t){if(!t||t==="—")return;try{navigator.clipboard?.writeText(t)}catch{}}
 function weatherTab(i){
   $$(".weather-tabs button").forEach((x,n)=>x.classList.toggle("active",n===i));
