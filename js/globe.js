@@ -4,7 +4,7 @@ const BUMP="https://unpkg.com/three-globe/example/img/earth-topology.png";
 const SKY="https://unpkg.com/three-globe/example/img/night-sky.png";
 const instances=new Map(),state=new WeakMap();
 function fallback(el){if(!el)return;el.classList.add("globe-fallback-host");if(!el.querySelector(".globe-fallback"))el.insertAdjacentHTML("beforeend",'<div class="globe-fallback">3D Earth is unavailable here.<br><small>GPS coordinates continue to work.</small></div>')}
-function makeMarker(){const el=document.createElement("div");el.className="earth-marker";el.innerHTML='<span class="earth-marker-copy"><b></b><strong></strong><small></small></span>';return el}
+function makeMarker(mini=false){const el=document.createElement("div");el.className="earth-marker"+(mini?" mini-marker":"");el.innerHTML=mini?'<span class="earth-marker-dot"></span>':'<span class="earth-marker-dot"></span><span class="earth-marker-copy"><b></b><strong></strong><small></small></span>';return el}
 function updateSun(s){
  try{
   const g=s.g,now=new Date(),sun=solarPosition(now),lights=g.lights?.(),dir=lights?.find(x=>x&&x.isDirectionalLight);
@@ -54,7 +54,7 @@ export function updateGlobe(element,p){
  if(!p||!Number.isFinite(p.lat)||!Number.isFinite(p.lon)){if(s.marker){g.pointsData([]);g.ringsData([]);g.htmlElementsData([])}return}
  const place=p.place||"Thrissur",d=new Date(p.time||Date.now()),time=d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),date=d.toLocaleDateString([],{day:"2-digit",month:"short",year:"numeric"});
  if(!s.marker){
-  s.marker=makeMarker();
+  s.marker=makeMarker(s.mini);
   g.htmlElementsData([{lat:p.lat,lng:p.lon,el:s.marker}]).htmlLat(d=>d.lat).htmlLng(d=>d.lng).htmlAltitude(.004).htmlElement(d=>d.el).htmlTransitionDuration(0);
  }else g.htmlElementsData([{lat:p.lat,lng:p.lon,el:s.marker}]);
  const b=s.marker.querySelector("b"),strong=s.marker.querySelector("strong"),small=s.marker.querySelector("small");
