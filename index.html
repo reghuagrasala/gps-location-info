@@ -25,7 +25,27 @@
 })();
 </script>
 <script>
-window.__retryGPSFallback=()=>location.reload();
+window.__retryGPSFallback=()=>window.__directGPS();
+window.__directGPS=()=>{
+  const api=document.getElementById("gpsDiagApi"), perm=document.getElementById("gpsDiagPermission"), ev=document.getElementById("gpsDiagEvent");
+  if(!navigator.geolocation){ev.textContent="DIRECT GPS: UNSUPPORTED";return}
+  ev.textContent="DIRECT GPS: request sent · waiting up to 15 s…";
+  const ok=p=>{
+    const c=p.coords;
+    ev.textContent="DIRECT GPS SUCCESS · "+Number(c.latitude).toFixed(6)+", "+Number(c.longitude).toFixed(6)+" · accuracy "+(Number.isFinite(c.accuracy)?Math.round(c.accuracy)+" m":"—");
+    const box=document.getElementById("gpsDiagnostic"); if(box){box.classList.add("ok");box.classList.remove("error")}
+    window.__directGPSLast=p;
+    window.dispatchEvent(new CustomEvent("direct-gps-success",{detail:p}));
+  };
+  const fail=e=>{
+    const names={1:"PERMISSION_DENIED",2:"POSITION_UNAVAILABLE",3:"TIMEOUT"};
+    ev.textContent="DIRECT GPS "+(names[e?.code]||"ERROR")+" · "+(e?.message||"No position");
+    const box=document.getElementById("gpsDiagnostic"); if(box){box.classList.add("error");box.classList.remove("ok")}
+  };
+  try{
+    navigator.geolocation.getCurrentPosition(ok,fail,{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+  }catch(e){fail({code:0,message:e?.message||String(e)})}
+};
 window.addEventListener("DOMContentLoaded",()=>{
   const q=id=>document.getElementById(id);
   try{
@@ -34,12 +54,9 @@ window.addEventListener("DOMContentLoaded",()=>{
       q("gpsDiagPermission").textContent="Permission: "+p.state;
     }).catch(()=>q("gpsDiagPermission").textContent="Permission: unavailable");
   }catch(e){q("gpsDiagEvent").textContent="Diagnostic error: "+e.message}
-  window.addEventListener("error",e=>{
-    const el=q("gpsDiagEvent"); if(el)el.textContent="APP ERROR · "+(e.message||"script error");
-  });
-  window.addEventListener("unhandledrejection",e=>{
-    const el=q("gpsDiagEvent"); if(el)el.textContent="APP ERROR · "+(e.reason?.message||String(e.reason||"promise rejection"));
-  });
+  window.addEventListener("error",e=>{const el=q("gpsDiagEvent");if(el)el.textContent="APP ERROR · "+(e.message||"script error")});
+  window.addEventListener("unhandledrejection",e=>{const el=q("gpsDiagEvent");if(el)el.textContent="APP ERROR · "+(e.reason?.message||String(e.reason||"promise rejection"))});
+  setTimeout(window.__directGPS,400);
 });
 </script>
 </head>
@@ -47,7 +64,7 @@ window.addEventListener("DOMContentLoaded",()=>{
 <div id="app">
 <header class="topbar">
   <button class="icon-btn" id="settingsBtn" aria-label="GPS settings">⚙</button>
-  <div class="brand"><h1>My Location Info</h1><p>GPS updates offline</p><small class="build-version">GPS Diagnostic v30</small><button id="installBtn" class="install-pill" hidden>Install App</button></div>
+  <div class="brand"><h1>My Location Info</h1><p>GPS updates offline</p><small class="build-version">GPS Diagnostic v31</small><button id="installBtn" class="install-pill" hidden>Install App</button></div>
   <button class="icon-btn" id="infoBtn" aria-label="About">ⓘ</button>
 </header>
 
