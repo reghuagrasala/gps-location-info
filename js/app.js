@@ -76,7 +76,7 @@ async function renderWeather(force=false){
   g.querySelectorAll(".weather-card").forEach((el,i)=>{el.dataset.infoKey=String(weatherLabels[i]||el.querySelector("label")?.textContent||"").toLowerCase().replace(/[^a-z0-9]+/g,"-");el.querySelector("b").textContent=vals[i]??"—";el.querySelector("small").textContent=r.provider||"Updated"});
  }finally{weatherBusy=false}
 }
-$$("[data-view]").forEach(b=>b.onclick=()=>show(b.dataset.view));$$("[data-back]").forEach(b=>b.onclick=()=>show("home"));window.addEventListener("popstate",()=>show(location.hash.slice(1)||"home"));
+$("[data-view]").forEach(b=>{b.type="button";b.addEventListener("click",()=>show(b.dataset.view),{passive:true});});$$("[data-back]").forEach(b=>b.onclick=()=>show("home"));window.addEventListener("popstate",()=>show(location.hash.slice(1)||"home"));
 $("#addressRefresh").onclick=()=>{if(gps)enrichPlace(gps,true);else $("#addressStatus").textContent="Waiting for GPS";};
 $("#weatherRefresh").onclick=()=>{lastWeather=null;lastWeatherAt=0;const g=$("#weatherGrid");if(g)g.innerHTML="";$("#weatherUpdated").textContent="Refreshing weather…";renderWeather(true);};
 let refreshTimer=0;
@@ -215,7 +215,7 @@ function showInfo(label,value){
  v.innerHTML=m?moonVisual(m):'<div class="info-symbol">'+info[2]+'</div><small>'+String(value||"Current value")+'</small>';
  sheet.classList.add("open");sheet.setAttribute("aria-hidden","false");
 }
-function closeInfo(){const s=$("#infoSheet");if(s){s.classList.remove("open");s.setAttribute("aria-hidden","true")}}
+function closeInfo(){const s=$("#infoSheet");if(s){s.classList.remove("open");s.setAttribute("aria-hidden","true")}}\n\n
 function copyText(t){if(!t||t==="—")return;try{navigator.clipboard?.writeText(t)}catch{}}
 function weatherTab(i){
   $$(".weather-tabs button").forEach((x,n)=>x.classList.toggle("active",n===i));
@@ -263,39 +263,3 @@ document.addEventListener("click",e=>{
  if(tab){e.preventDefault();e.stopPropagation();weatherTab([...$$( ".weather-tabs button")].indexOf(tab))}
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeInfo();if((e.key==="Enter"||e.key===" ")&&document.activeElement?.matches(".data-card,.weather-card")){e.preventDefault();document.activeElement.click()}});
-function copyText(t){if(!t||t==="—")return;try{navigator.clipboard?.writeText(t)}catch{}}
-function weatherTab(i){
-  $$(".weather-tabs button").forEach((x,n)=>x.classList.toggle("active",n===i));
-  if(!lastWeather){renderWeather(true);return}
-  const g=$("#weatherGrid"),h=lastWeather.hourly||{},d=lastWeather.daily||{};
-  if(i===0){renderWeather();return}
-  if(i===1){
-    const times=h.time||[],temps=h.temperature_2m||[],probs=h.precipitation_probability||[],rows=[];
-    let startIndex=times.findIndex(t=>new Date(t)>=new Date()); if(startIndex<0)startIndex=0;
-    for(let j=startIndex;j<Math.min(startIndex+12,times.length);j++){
-      const t=new Date(times[j]).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
-      rows.push('<div class="weather-card"><label>'+t+'</label><b>'+(Number.isFinite(temps[j])?temps[j].toFixed(1)+"°C":"—")+'</b><small>Rain chance '+(Number.isFinite(probs[j])?probs[j]+"%":"—")+'</small></div>');
-    }
-    g.innerHTML=rows.join("")||'<div class="weather-card weather-message"><b>Hourly data unavailable</b><small>Refresh weather to try again.</small></div>';
-    $("#weatherUpdated").textContent="Hourly forecast · "+(lastWeather.provider||"weather service");return;
-  }
-  if(i===2){
-    const dates=d.time||[],max=d.temperature_2m_max||[],min=d.temperature_2m_min||[],rows=[];
-    for(let j=0;j<Math.min(3,dates.length);j++){
-      const day=new Date(dates[j]+"T12:00:00").toLocaleDateString([],{weekday:"short",day:"numeric",month:"short"});
-      rows.push('<div class="weather-card"><label>'+day+'</label><b>'+(Number.isFinite(max[j])?Math.round(max[j])+"°":"—")+' / '+(Number.isFinite(min[j])?Math.round(min[j])+"°C":"—")+'</b><small>High / Low</small></div>');
-    }
-    g.innerHTML=rows.join("")||'<div class="weather-card weather-message"><b>Daily data unavailable</b><small>Refresh weather to try again.</small></div>';
-    $("#weatherUpdated").textContent="3-day forecast · "+(lastWeather.provider||"weather service");return;
-  }
-  const title=i===3?"Radar":"Map";
-  const msg=i===3?"Radar requires a radar provider.":"Map requires a map provider. Use MAP on Position for navigation.";
-  g.innerHTML='<div class="weather-card weather-message" style="grid-column:1/-1;min-height:110px"><b>'+title+'</b><small>'+msg+'</small></div>';
-  $("#weatherUpdated").textContent=title+" · provider not connected";
-}
-document.addEventListener("click",e=>{
-  const cardEl=e.target.closest(".data-card,.weather-card");
-  if(cardEl){const b=cardEl.querySelector("b");if(b)copyText(b.textContent)}
-  const tab=e.target.closest(".weather-tabs button");
-  if(tab){e.preventDefault();e.stopPropagation();weatherTab([...$$(".weather-tabs button")].indexOf(tab))}
-});
