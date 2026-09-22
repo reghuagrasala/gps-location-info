@@ -130,3 +130,29 @@ main{height:calc(100dvh - clamp(66px,9dvh,82px));overflow:hidden}
 @media(display-mode:standalone) and (max-height:720px){
  .globe-card{max-height:calc(100% - 150px)}
 }
+
+/* v24: detail pages scroll vertically, never sideways; Home remains fixed */
+html,body{overflow-x:hidden}
+body{touch-action:pan-y}
+body.detail-mode{overflow-y:auto;overflow-x:hidden}
+body.detail-mode #app{height:auto;min-height:100dvh;overflow:visible}
+body.detail-mode main{
+  height:auto;
+  min-height:100dvh;
+  overflow:visible;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom));
+}
+body.detail-mode .view{
+  overflow-x:hidden;
+  max-width:100%;
+}
+body.detail-mode .panel,
+body.detail-mode .data-grid,
+body.detail-mode .weather-grid,
+body.detail-mode .weather-tabs{
+  max-width:100%;
+}
+body.detail-mode .weather-tabs{touch-action:pan-x}
+@media(max-width:520px){
+ body.detail-mode main{padding-left:8px;padding-right:8px}
+}
