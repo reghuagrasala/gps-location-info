@@ -1,4 +1,4 @@
-import{startGPS,onGPS}from "./gps.js";
+import{startGPS,retryGPS,onGPS}from "./gps.js";
 import{dms,plusCode,bearingName}from "./coordinates.js";
 import{moonPhase}from "./astronomy.js";
 import{getDigiPin,isIndiaForDigiPin}from "./digipin.js";
@@ -87,6 +87,8 @@ async function enrichPlace(p,force=false){
 
 function renderAll(){
  const waiting=$("#globeWaiting");
+ const gpsError=gps?.error||"";
+ if(waiting&&gpsError&&!Number.isFinite(gps?.lat))waiting.querySelector("span:last-child")?.replaceChildren(document.createTextNode("GPS: "+gpsError+" · Tap to retry"));
  const hasGps=!!gps&&Number.isFinite(gps.lat)&&Number.isFinite(gps.lon);
  if(!hasGps){
   waiting?.classList.remove("hidden");
@@ -274,6 +276,7 @@ function wireEvents(){
  $$("[data-view]").forEach(b=>b.onclick=()=>show(b.dataset.view));
  $$("[data-back]").forEach(b=>b.onclick=()=>show("home"));
  $("#addressRefresh").onclick=()=>gps?enrichPlace(gps,true):actionNote("Waiting for GPS");
+ $("#globeWaiting").onclick=()=>retryGPS();
  $("#weatherRefresh").onclick=()=>{lastWeather=null;lastWeatherAt=0;$("#weatherGrid").innerHTML="";renderWeather(true)};
  $("#compassBtn").onclick=async()=>{const ok=await enableCompass();$("#compassStatus").textContent=ok?"Active":"Unavailable — tap again if iOS requests permission";$("#compassBtn").textContent=ok?"COMPASS ACTIVE":"ENABLE COMPASS";$("#compassBtn").classList.toggle("is-active",ok)};
  $("#saveBtn").onclick=async e=>{e.preventDefault();if(!gps){actionNote("Waiting for GPS…");return}try{const s={id:crypto.randomUUID(),time:gps.time,lat:gps.lat,lon:gps.lon,accuracy:gps.accuracy,altitude:gps.altitude,speed:gps.speed,heading:gps.heading,label:placeName(gps)};await savePlace(s);selected=s;await renderSaved();actionNote("Location saved")}catch{actionNote("Could not save location")}};
