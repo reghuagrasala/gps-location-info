@@ -26,13 +26,21 @@
 </script>
 <script>
 window.__retryGPSFallback=()=>location.reload();
-(()=>{const q=id=>document.getElementById(id);try{
- q("gpsDiagApi").textContent="API: "+(navigator.geolocation?"AVAILABLE":"UNSUPPORTED")+" · Context: "+(window.isSecureContext?"secure":"NOT secure");
- if(navigator.permissions?.query)navigator.permissions.query({name:"geolocation"}).then(p=>q("gpsDiagPermission").textContent="Permission: "+p.state).catch(()=>q("gpsDiagPermission").textContent="Permission: unavailable");
-}catch(e){q("gpsDiagEvent").textContent="Diagnostic error: "+e.message}
-window.addEventListener("error",e=>{q("gpsDiagEvent").textContent="APP ERROR · "+(e.message||"script error")});
-window.addEventListener("unhandledrejection",e=>{q("gpsDiagEvent").textContent="APP ERROR · "+(e.reason?.message||String(e.reason||"promise rejection"))});
-})();
+window.addEventListener("DOMContentLoaded",()=>{
+  const q=id=>document.getElementById(id);
+  try{
+    q("gpsDiagApi").textContent="API: "+(navigator.geolocation?"AVAILABLE":"UNSUPPORTED")+" · Context: "+(window.isSecureContext?"secure":"NOT secure");
+    if(navigator.permissions?.query)navigator.permissions.query({name:"geolocation"}).then(p=>{
+      q("gpsDiagPermission").textContent="Permission: "+p.state;
+    }).catch(()=>q("gpsDiagPermission").textContent="Permission: unavailable");
+  }catch(e){q("gpsDiagEvent").textContent="Diagnostic error: "+e.message}
+  window.addEventListener("error",e=>{
+    const el=q("gpsDiagEvent"); if(el)el.textContent="APP ERROR · "+(e.message||"script error");
+  });
+  window.addEventListener("unhandledrejection",e=>{
+    const el=q("gpsDiagEvent"); if(el)el.textContent="APP ERROR · "+(e.reason?.message||String(e.reason||"promise rejection"));
+  });
+});
 </script>
 </head>
 <body>
