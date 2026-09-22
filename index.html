@@ -64,7 +64,7 @@ window.addEventListener("DOMContentLoaded",()=>{
 <div id="app">
 <header class="topbar">
   <button class="icon-btn" id="settingsBtn" aria-label="GPS settings">⚙</button>
-  <div class="brand"><h1>My Location Info</h1><p>GPS updates offline</p><small class="build-version">GPS Diagnostic v31</small><button id="installBtn" class="install-pill" hidden>Install App</button></div>
+  <div class="brand"><h1>My Location Info</h1><p>GPS updates offline</p><small class="build-version">GPS Diagnostic v32</small><button id="installBtn" class="install-pill" hidden>Install App</button></div>
   <button class="icon-btn" id="infoBtn" aria-label="About">ⓘ</button>
 </header>
 
@@ -76,7 +76,7 @@ window.addEventListener("DOMContentLoaded",()=>{
     <div id="globeStatus" class="globe-status">GPS starting · Drag · pinch · zoom</div>
     
   </div>
-  <div id="gpsDiagnostic" class="gps-diagnostic" aria-live="polite"><b>GPS diagnostic v30</b><span id="gpsDiagApi">Checking Geolocation API…</span><span id="gpsDiagPermission">Permission: checking…</span><span id="gpsDiagEvent">Waiting for GPS callback…</span><button id="gpsRetry" type="button" onclick="window.__retryGPSFallback?.()">RETRY GPS</button></div>
+  <div id="gpsDiagnostic" class="gps-diagnostic" aria-live="polite"><b>GPS diagnostic v32</b><span id="gpsDiagApi">Checking Geolocation API…</span><span id="gpsDiagPermission">Permission: checking…</span><span id="gpsDiagEvent">Waiting for GPS callback…</span><button id="gpsRetry" type="button" onclick="window.__retryGPSFallback?.()">RETRY GPS</button></div>
   <div class="home-grid">
     <button data-view="position" class="home-card position"><i>⌖</i><span><b>Position</b><small>Where am I?</small></span><strong>›</strong></button>
     <button data-view="gps" class="home-card gps"><i>◈</i><span><b>GPS Data</b><small>How is it measured?</small></span><strong>›</strong></button>
@@ -117,5 +117,27 @@ window.addEventListener("DOMContentLoaded",()=>{
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js?v=29").catch(()=>{}))}
 </script>
 <script type="module" src="js/app.js?v=29"></script>
+<script>
+window.addEventListener("DOMContentLoaded",()=>{
+ setTimeout(()=>{
+  if(window.__appModuleLoaded)return;
+  const show=id=>{
+   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+   (document.getElementById(id)||document.getElementById("home")).classList.add("active");
+   history.replaceState({},"","#"+id);
+  };
+  document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>show(b.dataset.view));
+  document.querySelectorAll("[data-back]").forEach(b=>b.onclick=()=>show("home"));
+  const retry=()=>window.__directGPS?.();
+  document.getElementById("gpsRetry")?.addEventListener("click",retry);
+  document.getElementById("gpsOverlay")?.addEventListener("click",retry);
+  document.getElementById("globe")?.addEventListener("click",retry);
+  document.getElementById("settingsBtn")?.addEventListener("click",()=>{const x=document.getElementById("infoSheet");if(x){document.getElementById("sheetTitle").textContent="GPS settings";document.getElementById("sheetText").textContent="High accuracy GPS is enabled. The browser direct GPS test is active.";x.hidden=false}});
+  document.getElementById("infoBtn")?.addEventListener("click",()=>{const x=document.getElementById("infoSheet");if(x){document.getElementById("sheetTitle").textContent="My Location Info";document.getElementById("sheetText").textContent="GPS updates can continue offline after the device provides a location fix.";x.hidden=false}});
+  document.getElementById("sheetClose")?.addEventListener("click",()=>document.getElementById("infoSheet").hidden=true);
+  document.querySelector(".sheet-bg")?.addEventListener("click",()=>document.getElementById("infoSheet").hidden=true);
+ },1200);
+});
+</script>
 </body>
 </html>
