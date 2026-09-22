@@ -189,7 +189,7 @@ body.detail-mode .view{touch-action:pan-y}
 @media(display-mode:standalone){.install-pill{display:none!important}}
 
 
-.gps-diagnostic{margin:8px 10px 0;padding:9px 11px;border:1px solid rgba(120,170,220,.22);border-radius:12px;background:rgba(3,12,25,.78);display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:11px;color:#9db4ca}
+.gps-diagnostic{width:min(100%,520px);margin:6px auto 8px;padding:9px 11px;border:1px solid rgba(120,170,220,.22);border-radius:12px;background:rgba(3,12,25,.78);display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:11px;color:#9db4ca}
 .gps-diagnostic b{grid-column:1/-1;color:#dcecff;font-size:11px}
 .gps-diagnostic span{min-width:0;overflow-wrap:anywhere}
 .gps-diagnostic button{grid-column:1/-1;border:0;border-radius:9px;padding:7px;background:#173a5d;color:#eaf5ff;font-weight:700;font-size:11px}
