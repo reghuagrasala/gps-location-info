@@ -5,12 +5,12 @@ import{savePlace,getPlaces,deletePlace}from "./storage.js";
 import{enableCompass,onHeading,isActive}from "./compass.js";
 import{getWeather}from "./services/weather.js";
 import{reverseGeocode}from "./services/location.js";
-import{initGlobe,updateGlobe,resizeGlobe}from "./globe.js";
+import{initGlobe,updateGlobe,resizeGlobe,recenterGlobe}from "./globe.js";
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-let gps=null,selected=null,currentHeading=null,lastGeo={lat:null,lon:null,time:0},geoBusy=false,weatherBusy=false,lastWeather=null,lastWeatherAt=0;
+let gps=null,selected=null,currentHeading=null,lastGeo={lat:null,lon:null,time:0},geoBusy=false,weatherBusy=false,lastWeather=null,lastWeatherAt=0,weatherRequestId=0;
 const views={home:"homeView",position:"positionView",gps:"gpsView",address:"addressView",weather:"weatherView"};
 const homeGlobe=initGlobe($("#globe")),positionGlobe=initGlobe($("#positionGlobe"),{mini:true});
-function show(v){v=views[v]?v:"home";document.body.classList.toggle("detail-mode",v!=="home");$$(".view").forEach(x=>x.classList.remove("active"));$("#"+views[v]).classList.add("active");history.replaceState({v},"","#"+v);window.scrollTo(0,0);if(v==="position"){renderSaved();setTimeout(()=>resizeGlobe($("#positionGlobe")),50)}if(v==="address"){if(gps)enrichPlace(gps)}if(v==="weather"){if(gps)renderWeather()}renderAll()}
+function show(v){v=views[v]?v:"home";document.body.classList.toggle("detail-mode",v!=="home");$$(".view").forEach(x=>x.classList.remove("active"));$("#"+views[v]).classList.add("active");history.replaceState({v},"","#"+v);window.scrollTo(0,0);if(v==="position"){renderSaved();setTimeout(()=>{resizeGlobe($("#positionGlobe"));if(gps)recenterGlobe($("#positionGlobe"),gps)},50)}if(v==="address"){if(gps)enrichPlace(gps)}if(v==="weather"){if(gps)renderWeather(true)}if(v==="home"&&gps)setTimeout(()=>recenterGlobe($("#globe"),gps),80);renderAll()}
 function card(a,b){return'<div class="data-card"><label>'+a+"</label><b>"+b+"</b></div>"}
 function placeName(p){if(!p)return"Waiting for GPS…";if(p.place)return p.place;if(p.lat>=10.1&&p.lat<=10.85&&p.lon>=75.9&&p.lon<=76.8)return"Thrissur";if(isIndiaForDigiPin(p.lat,p.lon))return"India";return"Location"}
 function distanceMeters(a,b,c,d){const R=6371000,rad=Math.PI/180,la1=a*rad,la2=c*rad,dl=(c-a)*rad,dlo=(d-b)*rad,x=Math.sin(dl/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dlo/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -23,20 +23,22 @@ $("#addressStatus").textContent=p.address?(p.error?"GPS fix retained · address 
 updateGlobe($("#globe"),p);updateGlobe($("#positionGlobe"),p)}
 async function renderSaved(){const el=$("#savedPlaces"),list=await getPlaces().catch(()=>[]);el.innerHTML=list.length?list.map(p=>'<button class="saved-card" data-id="'+p.id+'"><b>'+p.label+"</b><small>"+p.lat.toFixed(5)+", "+p.lon.toFixed(5)+"</small><small>"+new Date(p.time).toLocaleString()+"</small></button>").join(""):'<div class="empty-saved">No saved places yet. Save the current position below.</div>' ;$$(".saved-card").forEach(b=>b.onclick=()=>{selected=list.find(p=>p.id===b.dataset.id)||null})}
 const weatherLabels=["Feels like","Wind","Gusts","Visibility","Humidity","Clouds","UV Index","Air Quality (AQI)","Air Pressure","Dew Point","Precipitation","Chance of Rain","Sunrise","Sunset","Moon Phase"];
-async function renderWeather(){
+async function renderWeather(force=false){
  const g=$("#weatherGrid");
  if(!gps||!Number.isFinite(gps.lat)||!Number.isFinite(gps.lon)){
   if(!g.children.length)g.innerHTML=weatherLabels.map(x=>'<button class="weather-card"><label>'+x+"</label><b>—</b><small>Waiting for GPS</small></button>").join("");
   $("#weatherUpdated").textContent="Waiting for GPS";
   return;
  }
- if(weatherBusy)return;
+ if(weatherBusy&&!force)return;
+ const requestId=++weatherRequestId;
  weatherBusy=true;
  const old=lastWeather;
  if(!g.children.length)g.innerHTML=weatherLabels.map(x=>'<button class="weather-card"><label>'+x+"</label><b>—</b><small>Fetching weather…</small></button>").join("");
  $("#weatherUpdated").textContent=old?.message?old.message:"Fetching weather…";
  try{
   const r=await getWeather(gps.lat,gps.lon);
+  if(requestId!==weatherRequestId)return;
   if(!r.ok){
    $("#weatherUpdated").textContent=old?.message?old.message+" · refresh failed; last data retained":(r.message||"Weather unavailable — tap ↻ to try again.");
    return;
@@ -67,19 +69,19 @@ async function renderWeather(){
 }
 $$("[data-view]").forEach(b=>b.onclick=()=>show(b.dataset.view));$$("[data-back]").forEach(b=>b.onclick=()=>show("home"));window.addEventListener("popstate",()=>show(location.hash.slice(1)||"home"));
 $("#addressRefresh").onclick=()=>{if(gps)enrichPlace(gps,true);else $("#addressStatus").textContent="Waiting for GPS";};
-$("#weatherRefresh").onclick=()=>{lastWeather=null;const g=$("#weatherGrid");if(g)g.innerHTML="";renderWeather();};
+$("#weatherRefresh").onclick=()=>{lastWeather=null;lastWeatherAt=0;const g=$("#weatherGrid");if(g)g.innerHTML="";$("#weatherUpdated").textContent="Refreshing weather…";renderWeather(true);};
 let refreshTimer=0;
 function scheduleNetworkRefresh(){
  clearTimeout(refreshTimer);
  refreshTimer=setTimeout(async()=>{
   if(document.hidden||!navigator.onLine||!gps)return;
   await enrichPlace(gps,true);
-  if(location.hash==="#weather"){lastWeather=null;await renderWeather();}
+  if(location.hash==="#weather"){lastWeather=null;await renderWeather(true);}
  },1200);
 }
 setInterval(()=>{if(!document.hidden&&navigator.onLine&&gps){enrichPlace(gps,false);if(location.hash==="#weather"&&!weatherBusy)renderWeather()}},60000);
-$("#compassBtn").onclick=async()=>{const ok=await enableCompass();$("#compassStatus").textContent=ok?"Active":"Unavailable — tap again if iOS requests permission";$("#compassBtn").textContent=ok?"Compass Active":"Enable Compass"};
-onHeading(h=>{currentHeading=(h+360)%360;$("#headingValue").textContent=Math.round(currentHeading)+"°";$("#headingDir").textContent=bearingName(currentHeading);$("#compassStatus").textContent="Active";const dial=$("#compassRing .compass-dial");if(dial)dial.style.transform="rotate("+(-currentHeading)+"deg)";renderAll()});
+$("#compassBtn").onclick=async()=>{const ok=await enableCompass();$("#compassStatus").textContent=ok?"Active":"Unavailable — tap again if iOS requests permission";$("#compassBtn").textContent=ok?"COMPASS ACTIVE":"ENABLE COMPASS";$("#compassBtn").classList.toggle("is-active",ok)};
+onHeading(h=>{currentHeading=(h+360)%360;if(gps)gps.heading=currentHeading;$("#headingValue").textContent=Math.round(currentHeading)+"°";$("#headingDir").textContent=bearingName(currentHeading);$("#compassStatus").textContent="Active";const dial=$("#compassRing .compass-dial");if(dial)dial.style.transform="rotate("+(-currentHeading)+"deg)";renderAll()});
 function actionNote(message){
  const el=$("#actionStatus");
  if(el)el.textContent=message;
@@ -116,13 +118,13 @@ $("#deleteBtn").onclick=async e=>{
  }
 };
 $("#infoBtn").onclick=()=>alert("My Location Info\nThe Earth is a live WebGL globe. GPS remains the authoritative position and core GPS functions work offline.");$("#settingsBtn").onclick=()=>alert("Settings will include units, compass behavior, API services and backup.");
-onGPS(p=>{gps=p;renderAll();enrichPlace(p);if((!lastWeather||Date.now()-lastWeatherAt>300000)&&navigator.onLine)renderWeather();if(location.hash==="#address")enrichPlace(p)});window.addEventListener("online",()=>{renderAll();if(gps){enrichPlace(gps,true);lastWeather=null;lastWeatherAt=0;renderWeather()}});window.addEventListener("pageshow",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"));if(gps)renderAll()});window.addEventListener("resize",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"))});document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderAll()});
+onGPS(p=>{gps=p;renderAll();enrichPlace(p);if((!lastWeather||Date.now()-lastWeatherAt>300000)&&navigator.onLine)renderWeather(true);if(location.hash==="#address")enrichPlace(p)});window.addEventListener("online",()=>{renderAll();if(gps){enrichPlace(gps,true);lastWeather=null;lastWeatherAt=0;renderWeather()}});window.addEventListener("pageshow",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"));if(gps)renderAll()});window.addEventListener("resize",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"))});document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderAll()});
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});startGPS();show(location.hash.slice(1)||"home");
 
 function copyText(t){if(!t||t==="—")return;try{navigator.clipboard?.writeText(t)}catch{}}
 function weatherTab(i){
   $$(".weather-tabs button").forEach((x,n)=>x.classList.toggle("active",n===i));
-  if(!lastWeather){renderWeather();return}
+  if(!lastWeather){renderWeather(true);return}
   const g=$("#weatherGrid"),h=lastWeather.hourly||{},d=lastWeather.daily||{};
   if(i===0){renderWeather();return}
   if(i===1){
