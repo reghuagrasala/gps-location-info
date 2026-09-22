@@ -18,18 +18,22 @@ function normalise(d){
 }
 export async function reverseGeocode(lat,lon){
  if(!Number.isFinite(lat)||!Number.isFinite(lon)||!navigator.onLine)return{ok:false};
- try{
-  const u=new URL(BDC);u.searchParams.set("latitude",lat);u.searchParams.set("longitude",lon);u.searchParams.set("localityLanguage","en");
-  const d=await fetchJSON(u.toString());
-  if(d.lookupSource==="reverseGeocoding"||d.city||d.locality)return normalise(d);
- }catch{}
- try{
-  const u=new URL(NOMINATIM);u.searchParams.set("lat",lat);u.searchParams.set("lon",lon);u.searchParams.set("format","jsonv2");u.searchParams.set("zoom","18");u.searchParams.set("addressdetails","1");u.searchParams.set("accept-language","en");
-  try{
+ const providers=[
+  async()=>{
    const u=new URL(PHOTON);u.searchParams.set("lat",lat);u.searchParams.set("lon",lon);
-   const d=await fetchJSON(u.toString());
-   const f=d.features?.[0]?.properties||{};
+   const d=await fetchJSON(u.toString());const f=d.features?.[0]?.properties||{};
+   if(!f.city&&!f.town&&!f.village&&!f.suburb&&!f.street)throw new Error("Photon empty");
    return normalise({address:{road:f.street,suburb:f.suburb,district:f.district,city:f.city||f.town||f.village,postcode:f.postcode,country:f.country,state:f.state},city:f.city||f.town||f.village,principalSubdivision:f.state,countryName:f.country,postcode:f.postcode,locality:f.suburb});
-  }catch{return{ok:false}}
- }
+  },
+  async()=>{
+   const u=new URL(BDC);u.searchParams.set("latitude",lat);u.searchParams.set("longitude",lon);u.searchParams.set("localityLanguage","en");
+   return normalise(await fetchJSON(u.toString()));
+  },
+  async()=>{
+   const u=new URL(NOMINATIM);u.searchParams.set("lat",lat);u.searchParams.set("lon",lon);u.searchParams.set("format","jsonv2");u.searchParams.set("zoom","18");u.searchParams.set("addressdetails","1");u.searchParams.set("accept-language","en");
+   return normalise(await fetchJSON(u.toString()));
+  }
+ ];
+ for(const provider of providers){try{const r=await provider();if(r?.ok)return r}catch{}}
+ return{ok:false};
 }
