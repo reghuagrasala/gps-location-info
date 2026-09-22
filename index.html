@@ -35,7 +35,7 @@
 <div class="page-head"><button class="back-btn" data-back aria-label="Back">‹</button><div><h2>Position</h2><p>Where exactly am I?</p></div><span></span></div>
 <div class="panel position-hero"><div id="positionGlobe" class="mini-globe" aria-label="Interactive position globe"></div><div class="hero-location"><b id="positionPlace">Waiting for GPS…</b><strong id="positionLatLon">—</strong><span id="positionAccuracy">Accuracy —</span></div></div>
 <div class="data-grid" id="positionData"></div><div class="panel saved-panel"><div class="section-title"><b>Saved Places</b><span>Swipe horizontally</span></div><div id="savedPlaces" class="saved-scroll"></div></div>
-<div class="action-bar"><button id="saveBtn" class="action primary">SAVE</button><button id="shareBtn" class="action">SHARE</button><button id="mapBtn" class="action">MAP</button><button id="deleteBtn" class="action danger">DELETE</button></div>
+<div id="actionStatus" class="action-status" aria-live="polite"></div><div class="action-bar"><button id="saveBtn" type="button" class="action primary">SAVE</button><button id="shareBtn" class="action" type="button">SHARE</button><button id="mapBtn" class="action" type="button">MAP</button><button id="deleteBtn" class="action danger" type="button">DELETE</button></div>
 </section>
 <section id="gpsView" class="view">
 <div class="page-head"><button class="back-btn" data-back aria-label="Back">‹</button><div><h2>GPS Data</h2><p>How is my location measured?</p></div><span></span></div>
