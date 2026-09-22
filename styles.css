@@ -382,3 +382,66 @@ body.detail-mode .page-head .icon-btn{width:44px!important;height:44px!important
  #home.active .globe-card{width:min(76vw,285px)!important;height:min(31dvh,285px)!important}
  #home.active .home-card{height:70px!important;min-height:70px!important}
 }
+
+
+/* v39: iPhone PWA final page architecture */
+body:has(.view.active:not(#home)) .topbar{display:none!important}
+body:has(.view.active:not(#home)) main{height:100dvh!important;overflow:hidden!important;padding:0 8px!important}
+body:has(.view.active:not(#home)) .view.active{
+ display:block!important;
+ height:100dvh!important;
+ min-height:100dvh!important;
+ max-height:none!important;
+ overflow-y:auto!important;
+ overflow-x:hidden!important;
+ -webkit-overflow-scrolling:touch!important;
+ overscroll-behavior-y:contain!important;
+ touch-action:pan-y!important;
+ padding:env(safe-area-inset-top) 0 calc(80px + env(safe-area-inset-bottom))!important;
+}
+body:has(.view.active:not(#home)) .page-head{
+ position:sticky!important;
+ top:0!important;
+ margin:0 0 12px!important;
+ padding:10px 0 8px!important;
+ min-height:62px!important;
+ background:rgba(6,20,35,.97)!important;
+ backdrop-filter:blur(16px)!important;
+}
+body:has(.view.active:not(#home)) .page-head h2{font-size:25px!important}
+body:has(.view.active:not(#home)) .page-head p{font-size:12px!important}
+body:has(.view.active:not(#home)) .page-head .back{
+ width:104px!important;height:44px!important;border-radius:14px!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ gap:6px!important;font-size:0!important;
+ background:linear-gradient(145deg,#174e78,#0a2942)!important;
+ border:1px solid rgba(120,215,255,.7)!important;
+ box-shadow:0 4px 16px rgba(0,0,0,.3)!important;
+}
+body:has(.view.active:not(#home)) .page-head .back::before{content:"←";font-size:25px!important}
+body:has(.view.active:not(#home)) .page-head .back::after{
+ content:"HOME";position:static!important;transform:none!important;
+ font-size:10px!important;font-weight:800!important;letter-spacing:.7px!important;color:#fff!important
+}
+body:has(.view.active:not(#home)) .action-bar{
+ position:static!important;
+ margin-top:18px!important;
+ margin-bottom:10px!important;
+}
+#home.active .globe-card{
+ width:min(78vw,310px)!important;height:min(31dvh,310px)!important;
+ margin:0 auto 8px!important;
+}
+#home.active .home-grid{
+ margin:8px 0 0!important;
+ padding:0 0 max(6px,env(safe-area-inset-bottom))!important;
+ gap:8px!important;
+}
+#home.active .home-card{
+ height:78px!important;min-height:78px!important;
+ padding:9px 10px!important;
+}
+@media(max-height:720px){
+ #home.active .globe-card{width:min(70vw,260px)!important;height:min(29dvh,260px)!important}
+ #home.active .home-card{height:72px!important;min-height:72px!important}
+}
