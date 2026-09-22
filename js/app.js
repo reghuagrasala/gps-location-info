@@ -51,3 +51,8 @@ $("#weatherRefresh").onclick=async e=>{e.preventDefault();e.stopPropagation();co
 $("#infoBtn").onclick=()=>alert("My Location Info\nThe Earth is a live WebGL globe. GPS remains the authoritative position and core GPS functions work offline.");$("#settingsBtn").onclick=()=>alert("Settings will include units, compass behavior, API services and backup.");
 onGPS(p=>{gps=p;renderAll();enrichPlace(p);if(location.hash==="#weather")renderWeather();if(location.hash==="#address")enrichPlace(p)});window.addEventListener("online",()=>{renderAll();if(gps){enrichPlace(gps);if(location.hash==="#weather")renderWeather();if(location.hash==="#address")enrichPlace(gps)}});window.addEventListener("pageshow",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"));if(gps)renderAll()});window.addEventListener("resize",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"))});document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderAll()});
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});startGPS();show(location.hash.slice(1)||"home");
+function initInteractiveTabs(){
+ $$(".weather-tabs button").forEach((b,i)=>b.onclick=()=>{ $$(".weather-tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active"); const msg=i===0?"Current conditions":i===1?"Hourly forecast":i===2?"3-day forecast":i===3?"Radar requires a map/radar provider": "Weather map requires a map provider"; $("#weatherUpdated").textContent=msg; });
+ $$(".weather-card").forEach(b=>b.onclick=()=>{const label=b.querySelector("label")?.textContent||"Weather detail";$("#weatherUpdated").textContent=label+" · tap ↻ for the latest value."});
+}
+initInteractiveTabs();
