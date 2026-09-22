@@ -38,7 +38,7 @@ export function resizeGlobe(el){
  try{const w=Math.max(1,el.clientWidth),h=Math.max(1,el.clientHeight);if(w<30||h<30)return false;g.width(w).height(h);return true}catch{return false}
 }
 export function restoreGlobe(el){const g=instances.get(el),s=state.get(el);if(!g)return false;resizeGlobe(el);g.resumeAnimation?.();if(s?.lastP)updateGlobe(el,s.lastP);return true}
-export function recenterGlobe(el,p,force=false){const g=instances.get(el),s=state.get(el);if(!g||!p)return;try{g.pointOfView({lat:p.lat,lng:p.lon,altitude:s?.mini?2.55:2.28},force?450:650);if(s)s.centered=true}catch{}}
+export function recenterGlobe(el,p,force=false){const g=instances.get(el),s=state.get(el);if(!g||!p||!Number.isFinite(p.lat)||!Number.isFinite(p.lon))return;try{if(s)s.centered=true;g.pointOfView({lat:p.lat,lng:p.lon,altitude:s?.mini?2.55:2.28},force?0:650);if(force){const c=g.controls?.();c?.update?.();requestAnimationFrame(()=>g.pointOfView({lat:p.lat,lng:p.lon,altitude:s?.mini?2.55:2.28},0))}}catch{}}
 export function updateGlobe(el,p){
  const g=instances.get(el),s=state.get(el);if(!g||!s)return;s.lastP=p||null;
  if(!p||!Number.isFinite(p.lat)||!Number.isFinite(p.lon)){g.pointsData([]);g.ringsData([]);g.htmlElementsData([]);return}
