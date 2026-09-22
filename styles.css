@@ -77,3 +77,8 @@ body.detail-mode .topbar{display:none}body.detail-mode main{padding-top:env(safe
   transform:translate(0,-50%) !important;
   transform-origin:left center;
 }
+
+/* The 3D point is the exact GPS coordinate. The HTML label is only an annotation. */
+.earth-marker{transform:translate(0,-50%) !important;display:flex;align-items:center;gap:8px;pointer-events:none}
+.earth-marker-copy{margin-left:25px!important}
+#addressRefresh,#weatherRefresh{touch-action:manipulation}
