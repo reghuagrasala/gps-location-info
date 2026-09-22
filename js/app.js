@@ -68,15 +68,41 @@ async function renderWeather(){
 $$("[data-view]").forEach(b=>b.onclick=()=>show(b.dataset.view));$$("[data-back]").forEach(b=>b.onclick=()=>show("home"));window.addEventListener("popstate",()=>show(location.hash.slice(1)||"home"));
 $("#compassBtn").onclick=async()=>{const ok=await enableCompass();$("#compassStatus").textContent=ok?"Active":"Unavailable — tap again if iOS requests permission";$("#compassBtn").textContent=ok?"Compass Active":"Enable Compass"};
 onHeading(h=>{currentHeading=(h+360)%360;$("#headingValue").textContent=Math.round(currentHeading)+"°";$("#headingDir").textContent=bearingName(currentHeading);$("#compassStatus").textContent="Active";const dial=$("#compassRing .compass-dial");if(dial)dial.style.transform="rotate("+(-currentHeading)+"deg)";renderAll()});
-$("#saveBtn").onclick=async()=>{if(!gps)return alert("Waiting for GPS.");const s={id:crypto.randomUUID(),time:gps.time,lat:gps.lat,lon:gps.lon,accuracy:gps.accuracy,altitude:gps.altitude,speed:gps.speed,heading:gps.heading,label:"Saved Location"};await savePlace(s);selected=s;renderSaved()};
-$("#shareBtn").onclick=async()=>{if(!gps)return;const text="My Location Info\n"+gps.lat.toFixed(6)+", "+gps.lon.toFixed(6);if(navigator.share){try{await navigator.share({title:"My Location Info",text})}catch{}}else navigator.clipboard?.writeText(text)};
-$("#mapBtn").onclick=()=>{if(gps)location.href="https://www.google.com/maps/search/?api=1&query="+gps.lat+","+gps.lon};
-$("#deleteBtn").onclick=async()=>{if(!selected)return alert("Select a saved place first.");if(confirm("Delete this saved place?")){await deletePlace(selected.id);selected=null;renderSaved()}};
-$("#copyAddress").onclick=async()=>{const t=$("#addressText").textContent;try{await navigator.clipboard.writeText(t)}catch{}};
-$("#addressRefresh").onclick=async()=>{if(!gps){$("#addressStatus").textContent="Waiting for GPS…";return}$("#addressStatus").textContent="Refreshing address…";lastGeo={lat:null,lon:null,time:0};await enrichPlace(gps,true);if(!gps.address)$("#addressStatus").textContent=navigator.onLine?"Address services did not return a result. Tap ↻ again.":"Connect to the Internet and tap ↻.";
+function actionNote(message){
+ const el=$("#actionStatus");
+ if(el)el.textContent=message;
+}
+$("#saveBtn").onclick=async e=>{
+ e.preventDefault();e.stopPropagation();
+ if(!gps){actionNote("Waiting for GPS…");return}
+ try{
+  const s={id:crypto.randomUUID(),time:gps.time,lat:gps.lat,lon:gps.lon,accuracy:gps.accuracy,altitude:gps.altitude,speed:gps.speed,heading:gps.heading,label:placeName(gps)};
+  await savePlace(s);selected=s;await renderSaved();actionNote("Location saved");
+ }catch{actionNote("Could not save location")}
 };
-$("#weatherRefresh").onclick=async e=>{e.preventDefault();e.stopPropagation();const b=$("#weatherRefresh");if(b.dataset.busy)return;b.dataset.busy="1";b.textContent="…";try{await renderWeather()}catch{$("#weatherUpdated").textContent=lastWeather?.message||"Weather could not be fetched."}finally{delete b.dataset.busy;b.textContent="↻"};};
-
+$("#shareBtn").onclick=async e=>{
+ e.preventDefault();e.stopPropagation();
+ if(!gps){actionNote("Waiting for GPS…");return}
+ const text="My Location Info\n"+gps.lat.toFixed(6)+", "+gps.lon.toFixed(6);
+ try{
+  if(navigator.share)await navigator.share({title:"My Location Info",text});
+  else if(navigator.clipboard)await navigator.clipboard.writeText(text);
+  actionNote("Location shared");
+ }catch(err){if(err?.name!=="AbortError")actionNote("Share unavailable")}
+};
+$("#mapBtn").onclick=e=>{
+ e.preventDefault();e.stopPropagation();
+ if(gps){window.open("https://www.google.com/maps/search/?api=1&query="+gps.lat+","+gps.lon,"_blank");actionNote("Opening Maps…")}
+ else actionNote("Waiting for GPS…");
+};
+$("#deleteBtn").onclick=async e=>{
+ e.preventDefault();e.stopPropagation();
+ if(!selected){actionNote("Select a saved place first");return}
+ if(confirm("Delete this saved place?")){
+  try{await deletePlace(selected.id);selected=null;await renderSaved();actionNote("Saved place deleted")}
+  catch{actionNote("Could not delete saved place")}
+ }
+};
 $("#infoBtn").onclick=()=>alert("My Location Info\nThe Earth is a live WebGL globe. GPS remains the authoritative position and core GPS functions work offline.");$("#settingsBtn").onclick=()=>alert("Settings will include units, compass behavior, API services and backup.");
 onGPS(p=>{gps=p;renderAll();enrichPlace(p);if(location.hash==="#weather"&&!lastWeather)renderWeather();if(location.hash==="#address")enrichPlace(p)});window.addEventListener("online",()=>{renderAll();if(gps){enrichPlace(gps);if(location.hash==="#weather")renderWeather();if(location.hash==="#address")enrichPlace(gps)}});window.addEventListener("pageshow",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"));if(gps)renderAll()});window.addEventListener("resize",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"))});document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderAll()});
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});startGPS();show(location.hash.slice(1)||"home");
