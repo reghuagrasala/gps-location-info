@@ -8,53 +8,22 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="My Location Info">
 <meta name="description" content="My Location Info — offline-first GPS and travel companion with a live WebGL Earth.">
-<meta property="og:title" content="My Location Info">
-<meta property="og:description" content="GPS updates offline. Live Earth, Position, GPS Data, Address and Weather.">
-<meta property="og:type" content="website">
 <link rel="manifest" href="manifest.json"><link rel="icon" href="icons/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icons/icon.svg">
 <link rel="stylesheet" href="styles.css"><title>My Location Info</title>
 </head>
-<body>
-<div id="app" class="app">
-<header class="topbar">
-<button class="icon-btn" id="settingsBtn" aria-label="Settings">⚙</button>
-<div class="brand"><h1>My Location Info</h1><p>GPS updates offline</p><button id="installBtn" class="install-pill" type="button" hidden>Install App</button></div>
-<button class="icon-btn" id="infoBtn" aria-label="About">ⓘ</button>
-</header>
+<body><div id="app" class="app">
+<header class="topbar"><button class="icon-btn" id="settingsBtn" aria-label="Settings">⚙</button><div class="brand"><h1>My Location Info</h1><p>GPS updates offline</p><button id="installBtn" class="install-pill" type="button" hidden>Install App</button></div><button class="icon-btn" id="infoBtn" aria-label="About">ⓘ</button></header>
 <main id="main" tabindex="-1">
-<section id="homeView" class="view active home-view">
-<div class="globe-card"><div id="globe" class="globe-host" aria-label="Interactive live Earth"></div><div id="globeWaiting" class="globe-waiting" aria-live="polite"><span class="location-glow" aria-hidden="true"></span><span>Waiting for GPS…</span></div><div class="globe-status">Drag · pinch · zoom</div></div>
-<div class="home-grid">
+<section id="homeView" class="view active home-view"><div class="globe-card"><div id="globe" class="globe-host" aria-label="Interactive live Earth"></div><div id="globeWaiting" class="globe-waiting" aria-live="polite"><span class="location-glow" aria-hidden="true"></span><span>Waiting for GPS…</span></div><div class="globe-status">Drag · pinch · zoom</div></div><div class="home-grid">
 <button class="home-card position" data-view="position"><span class="home-icon">⌖</span><span><b>Position</b><small>Where am I?</small></span><strong>›</strong></button>
 <button class="home-card gps" data-view="gps"><span class="home-icon">◈</span><span><b>GPS Data</b><small>How is it measured?</small></span><strong>›</strong></button>
 <button class="home-card address" data-view="address"><span class="home-icon">⌂</span><span><b>Address</b><small>What place is this?</small></span><strong>›</strong></button>
 <button class="home-card weather" data-view="weather"><span class="home-icon">☁</span><span><b>Weather</b><small>What's happening here?</small></span><strong>›</strong></button>
-</div>
-</section>
-<section id="positionView" class="view">
-<div class="page-head"><button class="back-btn" data-back aria-label="Back">‹</button><div><h2>Position</h2><p>Where exactly am I?</p></div><span></span></div>
-<div class="panel position-hero"><div id="positionGlobe" class="mini-globe" aria-label="Interactive position globe"></div><div class="hero-location"><b id="positionPlace">Waiting for GPS…</b><strong id="positionLatLon">—</strong><span id="positionAccuracy">Accuracy —</span></div></div>
-<div class="data-grid" id="positionData"></div><div class="panel saved-panel"><div class="section-title"><b>Saved Places</b><span>Swipe horizontally</span></div><div id="savedPlaces" class="saved-scroll"></div></div>
-<div id="actionStatus" class="action-status" aria-live="polite"></div><div class="action-bar"><button id="saveBtn" type="button" class="action primary">SAVE</button><button id="shareBtn" class="action" type="button">SHARE</button><button id="mapBtn" class="action" type="button">MAP</button><button id="deleteBtn" class="action danger" type="button">DELETE</button></div>
-</section>
-<section id="gpsView" class="view">
-<div class="page-head"><button class="back-btn" data-back aria-label="Back">‹</button><div><h2>GPS Data</h2><p>How is my location measured?</p></div><span></span></div>
-<div class="data-grid" id="gpsData"></div>
-<div class="panel compass-panel"><div class="section-title"><b>Compass</b><span id="compassStatus">Not active</span></div>
-<button id="compassBtn" class="compass-capsule" type="button">ENABLE COMPASS</button>
-<div class="compass-frame"><div class="compass-ring" id="compassRing"><div class="compass-dial"><span>N</span><span>E</span><span>S</span><span>W</span></div><div class="compass-center"><b id="headingValue">—</b><small id="headingDir">—</small></div></div></div>
-</div>
-</section>
-<section id="addressView" class="view">
-<div class="page-head"><button class="back-btn" data-back aria-label="Back">‹</button><div><h2>Address</h2><p>What place is this?</p></div><button id="addressRefresh" class="icon-btn small" type="button" aria-label="Refresh address">↻</button></div>
-<div class="panel address-panel"><div class="status-line" id="addressStatus">Waiting for GPS</div><div id="addressText" class="address-text">Address will be available when data is connected.</div><button id="copyAddress" class="wide-btn">Copy Address</button></div>
-<div class="data-grid" id="addressData"></div><div class="panel"><div class="section-title"><b>Postal information</b><span>Country-aware</span></div><div id="postalInfo" class="detail-lines"></div></div>
-</section>
-<section id="weatherView" class="view">
-<div class="page-head"><button class="back-btn" data-back aria-label="Back">‹</button><div><h2>Weather</h2><p>What's happening here?</p></div><button id="weatherRefresh" class="icon-btn small">↻</button></div>
-<div class="weather-hero panel"><div><span id="weatherTemp" class="big-temp">—</span><span id="weatherCondition">Waiting for data</span><small id="weatherUpdated">Weather will be available when data is connected.</small></div><span class="weather-icon">☁</span></div>
-<div class="weather-grid" id="weatherGrid"></div><div class="weather-tabs"><button class="active">Now</button><button>Hourly</button><button>Daily</button><button>Radar</button><button>Map</button></div>
-</section>
+</div></section>
+<section id="positionView" class="view"><div class="page-head"><button class="back-btn" data-back aria-label="Back">‹</button><div><h2>Position</h2><p>Where exactly am I?</p></div><span></span></div><div class="panel position-hero"><div id="positionGlobe" class="mini-globe" aria-label="Interactive position globe"></div><div class="hero-location"><b id="positionPlace">Waiting for GPS…</b><strong id="positionLatLon">—</strong><span id="positionAccuracy">Accuracy —</span></div></div><div class="data-grid" id="positionData"></div><div class="panel saved-panel"><div class="section-title"><b>Saved Places</b><span>Saved locations</span></div><div id="savedPlaces" class="saved-scroll"></div></div><div id="actionStatus" class="action-status" aria-live="polite"></div><div class="action-bar"><button id="saveBtn" type="button" class="action primary">SAVE</button><button id="shareBtn" class="action" type="button">SHARE</button><button id="mapBtn" class="action" type="button">MAP</button><button id="deleteBtn" class="action danger" type="button">DELETE</button></div></section>
+<section id="gpsView" class="view"><div class="page-head"><button class="back-btn" data-back aria-label="Back">‹</button><div><h2>GPS Data</h2><p>How is my location measured?</p></div><span></span></div><div class="data-grid" id="gpsData"></div><div class="panel compass-panel"><div class="section-title"><b>Compass</b><span id="compassStatus">Not active</span></div><button id="compassBtn" class="compass-capsule" type="button">ENABLE COMPASS</button><div class="compass-frame"><div class="compass-ring" id="compassRing"><div class="compass-dial"><span>N</span><span>E</span><span>S</span><span>W</span></div><div class="compass-center"><b id="headingValue">—</b><small id="headingDir">—</small></div></div></div></div></section>
+<section id="addressView" class="view"><div class="page-head"><button class="back-btn" data-back aria-label="Back">‹</button><div><h2>Address</h2><p>What place is this?</p></div><button id="addressRefresh" class="icon-btn small" type="button" aria-label="Refresh address">↻</button></div><div class="panel address-panel"><div class="status-line" id="addressStatus">Waiting for GPS</div><div id="addressText" class="address-text">Address will be available when data is connected.</div><button id="copyAddress" class="wide-btn" type="button">Copy Address</button></div><div class="data-grid" id="addressData"></div><div class="panel"><div class="section-title"><b>Postal information</b><span>Country-aware</span></div><div id="postalInfo" class="detail-lines"></div></div></section>
+<section id="weatherView" class="view"><div class="page-head"><button class="back-btn" data-back aria-label="Back">‹</button><div><h2>Weather</h2><p>What's happening here?</p></div><button id="weatherRefresh" class="icon-btn small" type="button" aria-label="Refresh weather">↻</button></div><div class="weather-hero panel"><div><span id="weatherTemp" class="big-temp">—</span><span id="weatherCondition">Waiting for data</span><small id="weatherUpdated">Weather will be available when data is connected.</small></div><span class="weather-icon">☁</span></div><div class="weather-grid" id="weatherGrid"></div><div class="weather-tabs"><button class="active" type="button">Now</button><button type="button">Hourly</button><button type="button">Daily</button><button type="button">Radar</button><button type="button">Map</button></div></section>
 </main></div>
 <div id="infoSheet" class="info-sheet" aria-hidden="true"><div class="info-backdrop" data-info-close></div><section class="info-dialog" role="dialog" aria-modal="true" aria-labelledby="infoTitle"><button class="info-close" type="button" data-info-close aria-label="Close">×</button><div id="infoVisual" class="info-visual"></div><h3 id="infoTitle">Information</h3><p id="infoDescription"></p></section></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.min.js"></script><script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script><script type="module" src="js/app.js"></script>
