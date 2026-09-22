@@ -87,8 +87,26 @@ async function enrichPlace(p,force=false){
 
 function renderAll(){
  const waiting=$("#globeWaiting");
- if(!gps||!Number.isFinite(gps.lat)||!Number.isFinite(gps.lon)){
+ const hasGps=!!gps&&Number.isFinite(gps.lat)&&Number.isFinite(gps.lon);
+ if(!hasGps){
   waiting?.classList.remove("hidden");
+  const pd=$("#positionData"),gd=$("#gpsData"),ad=$("#addressData"),postal=$("#postalInfo");
+  if(pd&&!pd.children.length)pd.innerHTML=[
+   card("Latitude","Waiting for GPS…"),card("Longitude","Waiting for GPS…"),
+   card("DMS Latitude","—"),card("DMS Longitude","—"),card("Plus Code","—"),card("DIGIPIN","—"),
+   card("Elevation","Unavailable"),card("Accuracy","Unavailable")
+  ].join("");
+  if(gd&&!gd.children.length)gd.innerHTML=[
+   card("GPS Status","WAITING"),card("Location Fix","Waiting for GPS"),
+   card("Accuracy","Unavailable"),card("Elevation","Unavailable"),card("Speed","0.0 km/h"),
+   card("Heading","Unavailable"),card("Date","—"),card("Time","—"),
+   card("Time Zone",Intl.DateTimeFormat().resolvedOptions().timeZone),card("Compass",isActive()?"Active":"Not active")
+  ].join("");
+  const as=$("#addressStatus"),at=$("#addressText");
+  if(as)as.textContent="Waiting for GPS";
+  if(at)at.textContent="Address will be available when data is connected.";
+  if(ad&&!ad.children.length)ad.innerHTML=[card("Latitude","—"),card("Longitude","—"),card("Place","Waiting for GPS…"),card("District","—")].join("");
+  if(postal&&!postal.children.length)postal.innerHTML="<div><span>Postcode</span><b>—</b></div><div><span>DIGIPIN</span><b>—</b></div>";
   return;
  }
  const p=gps,d=new Date(p.time||Date.now());
@@ -129,7 +147,6 @@ function renderAll(){
  if(postal)postal.innerHTML="<div><span>Postcode</span><b>"+(p.postcode||"—")+"</b></div><div><span>DIGIPIN</span><b>"+pin+"</b></div>";
  updateGlobe($("#globe"),p);updateGlobe($("#positionGlobe"),p);
 }
-
 async function renderSaved(){
  const el=$("#savedPlaces");if(!el)return;
  const list=await getPlaces().catch(()=>[]);
