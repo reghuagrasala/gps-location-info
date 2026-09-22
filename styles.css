@@ -71,3 +71,9 @@ body.detail-mode .topbar{display:none}body.detail-mode main{padding-top:env(safe
     max-height:none;
   }
 }
+
+/* GPS marker anchor: Globe.gl's lat/lng must sit exactly under the green dot, not the center of the text label. */
+.earth-marker{
+  transform:translate(0,-50%) !important;
+  transform-origin:left center;
+}
