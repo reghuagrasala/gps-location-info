@@ -43,7 +43,11 @@ $("#saveBtn").onclick=async()=>{if(!gps)return alert("Waiting for GPS.");const s
 $("#shareBtn").onclick=async()=>{if(!gps)return;const text="My Location Info\n"+gps.lat.toFixed(6)+", "+gps.lon.toFixed(6);if(navigator.share){try{await navigator.share({title:"My Location Info",text})}catch{}}else navigator.clipboard?.writeText(text)};
 $("#mapBtn").onclick=()=>{if(gps)location.href="https://www.google.com/maps/search/?api=1&query="+gps.lat+","+gps.lon};
 $("#deleteBtn").onclick=async()=>{if(!selected)return alert("Select a saved place first.");if(confirm("Delete this saved place?")){await deletePlace(selected.id);selected=null;renderSaved()}};
-$("#copyAddress").onclick=()=>navigator.clipboard?.writeText($("#addressText").textContent);$("#weatherRefresh").onclick=renderWeather;
+$("#copyAddress").onclick=()=>navigator.clipboard?.writeText($("#addressText").textContent);
+$("#addressRefresh").onclick=async()=>{if(!gps){$("#addressStatus").textContent="Waiting for GPS…";return}$("#addressStatus").textContent="Refreshing address…";lastGeo={lat:null,lon:null,time:0};await enrichPlace(gps);if(!gps.address)$("#addressStatus").textContent=navigator.onLine?"Address services did not return a result. Tap ↻ again.":"Connect to the Internet and tap ↻.";
+};
+$("#weatherRefresh").addEventListener("click",async e=>{e.preventDefault();e.stopPropagation();const b=$("#weatherRefresh");b.disabled=true;b.textContent="…";$("#weatherUpdated").textContent="Refreshing weather…";try{await renderWeather()}finally{b.disabled=false;b.textContent="↻"}};
+
 $("#infoBtn").onclick=()=>alert("My Location Info\nThe Earth is a live WebGL globe. GPS remains the authoritative position and core GPS functions work offline.");$("#settingsBtn").onclick=()=>alert("Settings will include units, compass behavior, API services and backup.");
 onGPS(p=>{gps=p;renderAll();enrichPlace(p);if(location.hash==="#weather")renderWeather();if(location.hash==="#address")enrichPlace(p)});window.addEventListener("online",()=>{renderAll();if(gps){enrichPlace(gps);if(location.hash==="#weather")renderWeather();if(location.hash==="#address")enrichPlace(gps)}});window.addEventListener("pageshow",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"));if(gps)renderAll()});window.addEventListener("resize",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"))});document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderAll()});
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});startGPS();show(location.hash.slice(1)||"home");
