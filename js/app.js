@@ -81,17 +81,40 @@ $("#infoBtn").onclick=()=>alert("My Location Info\nThe Earth is a live WebGL glo
 onGPS(p=>{gps=p;renderAll();enrichPlace(p);if(location.hash==="#weather"&&!lastWeather)renderWeather();if(location.hash==="#address")enrichPlace(p)});window.addEventListener("online",()=>{renderAll();if(gps){enrichPlace(gps);if(location.hash==="#weather")renderWeather();if(location.hash==="#address")enrichPlace(gps)}});window.addEventListener("pageshow",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"));if(gps)renderAll()});window.addEventListener("resize",()=>{resizeGlobe($("#globe"));resizeGlobe($("#positionGlobe"))});document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderAll()});
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});startGPS();show(location.hash.slice(1)||"home");
 
+
 function copyText(t){if(!t||t==="—")return;try{navigator.clipboard?.writeText(t)}catch{}}
+function weatherTab(i){
+  $$(".weather-tabs button").forEach((x,n)=>x.classList.toggle("active",n===i));
+  if(!lastWeather){renderWeather();return}
+  const g=$("#weatherGrid"),h=lastWeather.hourly||{},d=lastWeather.daily||{};
+  if(i===0){renderWeather();return}
+  if(i===1){
+    const times=h.time||[],temps=h.temperature_2m||[],probs=h.precipitation_probability||[],rows=[];
+    let startIndex=times.findIndex(t=>new Date(t)>=new Date()); if(startIndex<0)startIndex=0;
+    for(let j=startIndex;j<Math.min(startIndex+12,times.length);j++){
+      const t=new Date(times[j]).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+      rows.push('<div class="weather-card"><label>'+t+'</label><b>'+(Number.isFinite(temps[j])?temps[j].toFixed(1)+"°C":"—")+'</b><small>Rain chance '+(Number.isFinite(probs[j])?probs[j]+"%":"—")+'</small></div>');
+    }
+    g.innerHTML=rows.join("")||'<div class="weather-card weather-message"><b>Hourly data unavailable</b><small>Refresh weather to try again.</small></div>';
+    $("#weatherUpdated").textContent="Hourly forecast · "+(lastWeather.provider||"weather service");return;
+  }
+  if(i===2){
+    const dates=d.time||[],max=d.temperature_2m_max||[],min=d.temperature_2m_min||[],rows=[];
+    for(let j=0;j<Math.min(3,dates.length);j++){
+      const day=new Date(dates[j]+"T12:00:00").toLocaleDateString([],{weekday:"short",day:"numeric",month:"short"});
+      rows.push('<div class="weather-card"><label>'+day+'</label><b>'+(Number.isFinite(max[j])?Math.round(max[j])+"°":"—")+' / '+(Number.isFinite(min[j])?Math.round(min[j])+"°C":"—")+'</b><small>High / Low</small></div>');
+    }
+    g.innerHTML=rows.join("")||'<div class="weather-card weather-message"><b>Daily data unavailable</b><small>Refresh weather to try again.</small></div>';
+    $("#weatherUpdated").textContent="3-day forecast · "+(lastWeather.provider||"weather service");return;
+  }
+  const title=i===3?"Radar":"Map";
+  const msg=i===3?"Radar requires a radar provider.":"Map requires a map provider. Use MAP on Position for navigation.";
+  g.innerHTML='<div class="weather-card weather-message" style="grid-column:1/-1;min-height:110px"><b>'+title+'</b><small>'+msg+'</small></div>';
+  $("#weatherUpdated").textContent=title+" · provider not connected";
+}
 document.addEventListener("click",e=>{
- const cardEl=e.target.closest(".data-card,.weather-card");
- if(cardEl){
-   const b=cardEl.querySelector("b");if(b)copyText(b.textContent);
- }
- const tab=e.target.closest(".weather-tabs button");
- if(tab){
-   $$(".weather-tabs button").forEach(x=>x.classList.remove("active"));tab.classList.add("active");
-   const i=[...$$(".weather-tabs button")].indexOf(tab);
-   const msg=["Current conditions","Hourly forecast","3-day forecast","Radar view is available when a radar provider is connected","Weather map is available when a map provider is connected"][i]||"";
-   $("#weatherUpdated").textContent=msg;
- }
+  const cardEl=e.target.closest(".data-card,.weather-card");
+  if(cardEl){const b=cardEl.querySelector("b");if(b)copyText(b.textContent)}
+  const tab=e.target.closest(".weather-tabs button");
+  if(tab){e.preventDefault();e.stopPropagation();weatherTab([...$$(".weather-tabs button")].indexOf(tab))}
 });
