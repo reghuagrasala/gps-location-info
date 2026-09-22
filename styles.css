@@ -445,3 +445,79 @@ body:has(.view.active:not(#home)) .action-bar{
  #home.active .globe-card{width:min(70vw,260px)!important;height:min(29dvh,260px)!important}
  #home.active .home-card{height:72px!important;min-height:72px!important}
 }
+
+
+/* v40: clean iPhone PWA page layout */
+#home.active{
+  display:flex!important;flex-direction:column!important;
+  height:calc(100dvh - var(--header-h))!important;
+  overflow:hidden!important;padding-top:10px!important;
+}
+#home.active .globe-card{
+  flex:0 0 auto!important;
+  width:min(74vw,300px)!important;
+  height:min(30dvh,300px)!important;
+  margin:8px auto 10px!important;
+}
+#home.active .home-grid{
+  flex:0 0 auto!important;
+  margin:6px 0 0!important;
+  gap:10px!important;
+  padding:0 0 8px!important;
+}
+#home.active .home-card{
+  height:82px!important;min-height:82px!important;
+  padding:10px 12px!important;
+}
+#home.active .home-card b{font-size:16px!important}
+#home.active .home-card small{font-size:11px!important}
+#home.active .home-card i{font-size:27px!important}
+
+body.detail-mode main{
+  height:100dvh!important;
+  padding:0 8px!important;
+  overflow:hidden!important;
+}
+body.detail-mode .view.active{
+  height:100dvh!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding:env(safe-area-inset-top) 0 calc(90px + env(safe-area-inset-bottom))!important;
+}
+body.detail-mode .page-head{
+  display:grid!important;
+  grid-template-columns:112px minmax(0,1fr) 48px!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  gap:8px!important;
+  min-height:68px!important;
+  margin:0 0 12px!important;
+  padding:8px 0 10px!important;
+  position:sticky!important;top:0!important;z-index:100!important;
+  background:rgba(6,20,35,.98)!important;
+}
+body.detail-mode .page-head>div{min-width:0!important}
+body.detail-mode .page-head h2{
+  font-size:25px!important;line-height:1.05!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+body.detail-mode .page-head p{
+  font-size:12px!important;white-space:nowrap!important;
+  overflow:hidden!important;text-overflow:ellipsis!important;
+}
+body.detail-mode .page-head .back{
+  width:108px!important;height:46px!important;
+  box-sizing:border-box!important;overflow:hidden!important;
+}
+body.detail-mode .page-head .icon-btn{
+  width:44px!important;height:44px!important;
+}
+body.detail-mode .position-hero{margin-top:0!important}
+body.detail-mode .action-bar{
+  position:static!important;margin:20px 0 0!important;
+}
+@media(max-height:720px){
+ #home.active .globe-card{width:min(68vw,270px)!important;height:min(28dvh,270px)!important}
+ #home.active .home-card{height:76px!important;min-height:76px!important}
+}
