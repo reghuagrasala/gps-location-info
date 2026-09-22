@@ -17,7 +17,7 @@ function show(v){v=views[v]?v:"home";document.body.classList.toggle("detail-mode
   setTimeout(()=>recenterGlobe($("#globe"),gps),700);
 }
 renderAll()}
-function card(a,b){return'<div class="data-card"><label>'+a+"</label><b>"+b+"</b></div>"}
+function card(a,b){return'<div class="data-card" role="button" tabindex="0" data-info-key="'+String(a).toLowerCase().replace(/[^a-z0-9]+/g,"-")+'"><label>'+a+"</label><b>"+b+"</b></div>"}
 function placeName(p){if(!p)return"Waiting for GPS…";if(p.place)return p.place;if(p.lat>=10.1&&p.lat<=10.85&&p.lon>=75.9&&p.lon<=76.8)return"Thrissur";if(isIndiaForDigiPin(p.lat,p.lon))return"India";return"Location"}
 function distanceMeters(a,b,c,d){const R=6371000,rad=Math.PI/180,la1=a*rad,la2=c*rad,dl=(c-a)*rad,dlo=(d-b)*rad,x=Math.sin(dl/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dlo/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
 async function enrichPlace(p,force=false){if((geoBusy&&!force)||!navigator.onLine||!p||!Number.isFinite(p.lat)||!Number.isFinite(p.lon))return;const now=Date.now();if(!force&&lastGeo.lat!==null&&(now-lastGeo.time<60000||distanceMeters(lastGeo.lat,lastGeo.lon,p.lat,p.lon)<150))return;$("#addressStatus").textContent=force?"Refreshing address…":"Fetching address…";geoBusy=true;try{const r=await reverseGeocode(p.lat,p.lon);if(r?.ok){p.place=(r.locality||r.label||p.place);p.address=r.address||p.address;p.postcode=r.postcode||p.postcode;p.district=r.district||p.district;if(!p.district&&p.lat>=10.1&&p.lat<=10.85&&p.lon>=75.9&&p.lon<=76.8)p.district="Thrissur";p.state=r.state||p.state;p.country=r.country||p.country;lastGeo={lat:p.lat,lon:p.lon,time:Date.now()};$("#addressStatus").textContent="Address updated";renderAll()}else{$("#addressStatus").textContent="Address fetch failed — tap ↻ to retry."}}catch{$("#addressStatus").textContent="Address fetch failed — tap ↻ to retry."}finally{geoBusy=false}}
@@ -140,6 +140,52 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){restoreGl
 window.addEventListener("orientationchange",()=>setTimeout(()=>restoreGlobe($("#globe")),180));
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});startGPS();show(location.hash.slice(1)||"home");
 
+const infoDescriptions={
+"gps-status":["GPS Status","Shows whether the browser is actively receiving location fixes.","📡"],
+"location-fix":["Location Fix","Available means a usable latitude and longitude have been received.","◎"],
+"accuracy":["Accuracy","The estimated horizontal uncertainty of the current position. A smaller value means a tighter position estimate.","🎯"],
+"elevation":["Elevation","Approximate height above mean sea level when the device supplies altitude information.","↕"],
+"speed":["Speed","Current movement speed supplied by the location service. When no movement speed is supplied, the app displays 0.0 km/h.","↝"],
+"heading":["Heading","Direction in degrees. When the live compass is active, this comes from the device orientation sensor.","🧭"],
+"date":["Date","The date attached to the current GPS measurement.","📅"],
+"time":["Time","The local time attached to the current GPS measurement.","◷"],
+"time-zone":["Time Zone","The device time-zone identifier used for local date and time.","🌐"],
+"compass":["Compass","Shows whether the device compass has been enabled.","🧭"],
+"latitude":["Latitude","Position north or south of the Equator.","N"],
+"longitude":["Longitude","Position east or west of the Prime Meridian.","E"],
+"dms-latitude":["DMS Latitude","Degrees, minutes and seconds notation for latitude.","N"],
+"dms-longitude":["DMS Longitude","Degrees, minutes and seconds notation for longitude.","E"],
+"plus-code":["Plus Code","A compact location code derived from latitude and longitude.","＋"],
+"digipin":["DIGIPIN","India Post digital addressing code calculated from the location grid.","▦"],
+"place":["Place","The locality identified for the current coordinates.","⌖"],
+"district":["District","The administrative district associated with the coordinates.","▤"],
+"feels-like":["Feels like","Apparent temperature combines air temperature with other weather factors.","🌡"],
+"wind":["Wind","Current wind speed at the weather location.","💨"],
+"gusts":["Gusts","The strongest short-term wind gust reported in the weather data.","≋"],
+"visibility":["Visibility","Approximate horizontal visibility in kilometres.","◉"],
+"humidity":["Humidity","Relative humidity is the percentage of moisture in the air.","💧"],
+"clouds":["Cloud cover","Estimated fraction of the sky covered by clouds.","☁"],
+"uv-index":["UV Index","Ultraviolet radiation index indicating potential UV exposure.","☀"],
+"air-quality-aqi":["Air Quality (AQI)","Air Quality Index summarises pollution levels from available air-quality data.","AQ"],
+"air-pressure":["Air Pressure","Atmospheric pressure, normally expressed in hPa.","P"],
+"dew-point":["Dew Point","Temperature at which air becomes saturated with water vapour.","💧"],
+"precipitation":["Precipitation","Precipitation amount for the current weather interval.","☔"],
+"chance-of-rain":["Chance of Rain","Forecast probability of precipitation.","☂"],
+"sunrise":["Sunrise","Local time when the Sun rises above the horizon.","🌅"],
+"sunset":["Sunset","Local time when the Sun sets below the horizon.","🌇"],
+"moon-phase":["Moon Phase","The Moon phase is calculated locally. Tap to see its current shape and a brief explanation.","☾"],
+};
+function showInfo(label,value){
+ const key=String(label).toLowerCase().replace(/[^a-z0-9]+/g,"-"),info=infoDescriptions[key],sheet=$("#infoSheet");
+ if(!info||!sheet)return;
+ $("#infoTitle").textContent=info[0];$("#infoDescription").textContent=info[1];
+ const v=$("#infoVisual");v.className="info-visual";
+ if(key==="moon-phase"){const m=moonPhase(new Date());v.innerHTML="<div class=\"moon-visual\"><div class=\"moon-disc\"><i></i></div><b>"+m.name+"</b><small>"+Math.round(m.illumination*100)+"% illuminated</small></div>";v.dataset.age=m.age}else{v.innerHTML="<div class=\"info-symbol\">"+info[2]+"</div><small>"+String(value||"Current value")+"</small>"}
+ sheet.classList.add("open");sheet.setAttribute("aria-hidden","false");
+}
+function closeInfo(){const s=$("#infoSheet");if(s){s.classList.remove("open");s.setAttribute("aria-hidden","true")}}
+document.addEventListener("click",e=>{if(e.target.closest("[data-info-close]")){closeInfo();return}const el=e.target.closest(".data-card,.weather-card");if(el){showInfo(el.querySelector("label")?.textContent||"",el.querySelector("b")?.textContent||"")}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeInfo();if((e.key==="Enter"||e.key===" ")&&document.activeElement?.matches(".data-card,.weather-card")){e.preventDefault();document.activeElement.click()}});
 function copyText(t){if(!t||t==="—")return;try{navigator.clipboard?.writeText(t)}catch{}}
 function weatherTab(i){
   $$(".weather-tabs button").forEach((x,n)=>x.classList.toggle("active",n===i));
