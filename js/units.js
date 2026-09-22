@@ -1,0 +1,1 @@
+export function regionFromLocale(){try{return new Intl.Locale(navigator.language).region||"IN"}catch{return"IN"}}export function unitsForRegion(r=regionFromLocale()){return["US","LR","MM"].includes(r)?{temp:"°F",speed:"mph",distance:"mi",elevation:"ft",pressure:"inHg"}:{temp:"°C",speed:"km/h",distance:"km",elevation:"m",pressure:"hPa"}}

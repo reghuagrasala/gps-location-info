@@ -1,0 +1,1 @@
+export async function getWeather(){return{ok:false,message:"Weather will be available when data is connected."}}
