@@ -293,3 +293,28 @@ body.detail-mode .page-head{
  #home.active .globe-card{width:min(calc(100vw - 30px),330px)!important;height:min(36dvh,330px)!important}
  #home.active .home-card{min-height:52px!important;height:52px!important}
 }
+
+
+/* v37: deterministic home/detail scrolling */
+html,body{width:100%;margin:0}
+body{overflow:hidden!important}
+main{overflow:hidden!important}
+#home.active{display:flex!important;flex-direction:column!important;height:calc(100dvh - var(--topbar-h,74px))!important;max-height:calc(100dvh - var(--topbar-h,74px))!important;overflow:hidden!important}
+#home.active .globe-card{flex:0 0 auto!important;width:min(88vw,360px)!important;height:min(38dvh,360px)!important;max-height:360px!important;margin:2px auto 4px!important}
+#home.active .home-grid{margin-top:auto!important;flex:0 0 auto!important;padding-bottom:4px!important;gap:6px!important}
+#home.active .home-card{height:55px!important;min-height:55px!important;padding:5px 8px!important}
+#home.active .gps-diagnostic{display:none!important}
+
+body.detail-mode{overflow:hidden!important}
+body.detail-mode #app{height:100dvh!important;overflow:hidden!important}
+body.detail-mode main{height:100dvh!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;padding:0 8px calc(50px + env(safe-area-inset-bottom))!important}
+body.detail-mode .view.active{display:block!important;height:auto!important;min-height:calc(100dvh - 10px)!important;overflow:visible!important;padding-bottom:40px!important}
+body.detail-mode .page-head{position:sticky!important;top:0!important}
+body.detail-mode .page-head .back{width:92px!important;height:42px!important;border-radius:14px!important;font-size:0!important}
+body.detail-mode .page-head .back::before{content:"←";font-size:25px;margin-right:5px}
+body.detail-mode .page-head .back::after{content:"HOME";position:static;transform:none;font-size:10px;font-weight:800;letter-spacing:.5px;color:#e9f6ff}
+body.detail-mode .page-head .back{display:flex!important;align-items:center!important;justify-content:center!important;gap:2px!important}
+@media(max-height:720px){
+ #home.active .globe-card{width:min(84vw,310px)!important;height:min(34dvh,310px)!important}
+ #home.active .home-card{height:52px!important;min-height:52px!important}
+}
