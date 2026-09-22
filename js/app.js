@@ -193,7 +193,7 @@ function show(v){
  window.scrollTo(0,0);
  if(v==="position"){renderSaved();setTimeout(()=>{resizeGlobe($("#positionGlobe"));if(gps)recenterGlobe($("#positionGlobe"),gps)},80)}
  if(v==="address"&&gps){renderAll();if(!gps.address)enrichPlace(gps);}
- if(v==="weather"&&gps)renderWeather(true);
+ if(v==="weather")renderWeather(true);
  if(v==="home"){restoreGlobe($("#globe"));if(gps)setTimeout(()=>recenterGlobe($("#globe"),gps),180);}
  renderAll();
 }
@@ -297,5 +297,6 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshGlo
 window.addEventListener("orientationchange",()=>setTimeout(refreshGlobe,180));
 
 wireEvents();bindWeatherTabs();updateInstallButton();
+initGlobe($("#globe"),{mini:false});initGlobe($("#positionGlobe"),{mini:true});
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});
 startGPS();show(location.hash.slice(1)||"home");
