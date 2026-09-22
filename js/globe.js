@@ -1,7 +1,7 @@
 import{solarPosition,solarAltitude}from "./astronomy.js";
-const EARTH_DAY="https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg";
-const BUMP="https://unpkg.com/three-globe/example/img/earth-topology.png";
-const SKY="https://unpkg.com/three-globe/example/img/night-sky.png";
+const EARTH_DAY="https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg";
+const BUMP="https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png";
+const SKY="https://cdn.jsdelivr.net/npm/three-globe/example/img/night-sky.png";
 const instances=new Map(),state=new WeakMap();
 function fallback(el){if(!el)return;el.classList.add("globe-fallback-host");if(!el.querySelector(".globe-fallback"))el.insertAdjacentHTML("beforeend",'<div class="globe-fallback">3D Earth is unavailable here.<br><small>GPS coordinates continue to work.</small></div>')}
 function makeMarker(mini=false){const el=document.createElement("div");el.className="earth-marker"+(mini?" mini-marker":"");el.innerHTML=mini?'<span class="earth-marker-dot"></span>':'<span class="earth-marker-dot"></span><span class="earth-marker-copy"><b></b><strong></strong><small></small></span>';return el}
