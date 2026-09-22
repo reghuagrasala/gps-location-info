@@ -90,3 +90,9 @@ body.detail-mode .topbar{display:none}body.detail-mode main{padding-top:env(safe
 /* Position profile globe: keep the globe clean; location text belongs beside it. */
 .mini-globe .earth-marker-copy{display:none!important}
 .mini-globe .earth-marker{gap:0!important}
+
+.action-status{min-height:18px;text-align:center;color:var(--muted);font-size:12px;margin:2px 0 4px}
+.action-bar,.action-bar button{pointer-events:auto;touch-action:manipulation}
+.action-bar{z-index:50}
+.action-bar button{position:relative;z-index:51;-webkit-user-select:none;user-select:none}
+.weather-tabs,.weather-tabs button{pointer-events:auto;touch-action:manipulation}
