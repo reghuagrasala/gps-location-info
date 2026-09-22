@@ -23,7 +23,19 @@ $("#addressStatus").textContent=p.error?"GPS fix retained · address enrichment 
 updateGlobe($("#globe"),p);updateGlobe($("#positionGlobe"),p)}
 async function renderSaved(){const el=$("#savedPlaces"),list=await getPlaces().catch(()=>[]);el.innerHTML=list.length?list.map(p=>'<button class="saved-card" data-id="'+p.id+'"><b>'+p.label+"</b><small>"+p.lat.toFixed(5)+", "+p.lon.toFixed(5)+"</small><small>"+new Date(p.time).toLocaleString()+"</small></button>").join(""):'<div class="empty-saved">No saved places yet. Save the current position below.</div>' ;$$(".saved-card").forEach(b=>b.onclick=()=>{selected=list.find(p=>p.id===b.dataset.id)||null})}
 const weatherLabels=["Feels like","Wind","Gusts","Visibility","Humidity","Clouds","UV Index","Air Quality (AQI)","Air Pressure","Dew Point","Precipitation","Chance of Rain","Sunrise","Sunset","Moon Phase"];
-function renderWeather(){const g=$("#weatherGrid");g.innerHTML=weatherLabels.map(x=>'<button class="weather-card"><label>'+x+"</label><b>—</b><small>Available when connected</small></button>").join("");getWeather().then(r=>$("#weatherUpdated").textContent=r.message)}
+async function renderWeather(){
+ const g=$("#weatherGrid");
+ g.innerHTML=weatherLabels.map(x=>'<button class="weather-card"><label>'+x+"</label><b>—</b><small>Available when connected</small></button>").join("");
+ const r=await getWeather(gps?.lat,gps?.lon);
+ $("#weatherUpdated").textContent=r.message;
+ if(!r.ok)return;
+ const c=r.current||{},d=r.daily||{},code=Number(c.weather_code);
+ const labels={0:"Clear sky",1:"Mainly clear",2:"Partly cloudy",3:"Overcast",45:"Fog",48:"Rime fog",51:"Light drizzle",53:"Drizzle",55:"Dense drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",71:"Light snow",73:"Snow",75:"Heavy snow",80:"Rain showers",81:"Rain showers",82:"Heavy showers",95:"Thunderstorm"};
+ $("#weatherTemp").textContent=Number.isFinite(c.temperature_2m)?Math.round(c.temperature_2m)+"°C":"—";
+ $("#weatherCondition").textContent=labels[code]||"Current conditions";
+ const vals=[c.apparent_temperature,Number.isFinite(c.wind_speed_10m)?c.wind_speed_10m.toFixed(1)+" km/h":"—","—","—",c.relative_humidity_2m,c.cloud_cover,c.uv_index_max??"—","—",c.surface_pressure,"—",c.precipitation,"—",d.sunrise?.[0]||"—",d.sunset?.[0]||"—","—"];
+ g.querySelectorAll(".weather-card").forEach((el,i)=>{el.querySelector("b").textContent=vals[i]??"—";el.querySelector("small").textContent="Open-Meteo fallback"});
+}
 $$("[data-view]").forEach(b=>b.onclick=()=>show(b.dataset.view));$$("[data-back]").forEach(b=>b.onclick=()=>show("home"));window.addEventListener("popstate",()=>show(location.hash.slice(1)||"home"));
 $("#compassBtn").onclick=async()=>{const ok=await enableCompass();$("#compassStatus").textContent=ok?"Active":"Unavailable — tap again if iOS requests permission";$("#compassBtn").textContent=ok?"Compass Active":"Enable Compass"};
 onHeading(h=>{currentHeading=(h+360)%360;$("#headingValue").textContent=Math.round(currentHeading)+"°";$("#headingDir").textContent=bearingName(currentHeading);$("#compassStatus").textContent="Active";const dial=$("#compassRing .compass-dial");if(dial)dial.style.transform="rotate("+(-currentHeading)+"deg)";renderAll()});
