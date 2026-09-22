@@ -14,7 +14,7 @@
 <title>My Location Info</title>
 <script>
 (async()=>{
-  const v="28";
+  const v="30";
   if(new URLSearchParams(location.search).get("reset-sw")===v){
     try{for(const r of await navigator.serviceWorker?.getRegistrations?.()||[])await r.unregister()}catch{}
     try{for(const k of await caches?.keys?.()||[])await caches.delete(k)}catch{}
@@ -47,7 +47,7 @@ window.addEventListener("DOMContentLoaded",()=>{
 <div id="app">
 <header class="topbar">
   <button class="icon-btn" id="settingsBtn" aria-label="GPS settings">⚙</button>
-  <div class="brand"><h1>My Location Info</h1><p>GPS updates offline</p><small class="build-version">GPS Diagnostic v29</small><button id="installBtn" class="install-pill" hidden>Install App</button></div>
+  <div class="brand"><h1>My Location Info</h1><p>GPS updates offline</p><small class="build-version">GPS Diagnostic v30</small><button id="installBtn" class="install-pill" hidden>Install App</button></div>
   <button class="icon-btn" id="infoBtn" aria-label="About">ⓘ</button>
 </header>
 
@@ -59,7 +59,7 @@ window.addEventListener("DOMContentLoaded",()=>{
     <div id="globeStatus" class="globe-status">GPS starting · Drag · pinch · zoom</div>
     
   </div>
-  <div id="gpsDiagnostic" class="gps-diagnostic" aria-live="polite"><b>GPS diagnostic v29</b><span id="gpsDiagApi">Checking Geolocation API…</span><span id="gpsDiagPermission">Permission: checking…</span><span id="gpsDiagEvent">Waiting for GPS callback…</span><button id="gpsRetry" type="button" onclick="window.__retryGPSFallback?.()">RETRY GPS</button></div>
+  <div id="gpsDiagnostic" class="gps-diagnostic" aria-live="polite"><b>GPS diagnostic v30</b><span id="gpsDiagApi">Checking Geolocation API…</span><span id="gpsDiagPermission">Permission: checking…</span><span id="gpsDiagEvent">Waiting for GPS callback…</span><button id="gpsRetry" type="button" onclick="window.__retryGPSFallback?.()">RETRY GPS</button></div>
   <div class="home-grid">
     <button data-view="position" class="home-card position"><i>⌖</i><span><b>Position</b><small>Where am I?</small></span><strong>›</strong></button>
     <button data-view="gps" class="home-card gps"><i>◈</i><span><b>GPS Data</b><small>How is it measured?</small></span><strong>›</strong></button>
