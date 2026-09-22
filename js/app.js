@@ -106,7 +106,7 @@ $("#shareBtn").onclick=async e=>{
 };
 $("#mapBtn").onclick=e=>{
  e.preventDefault();e.stopPropagation();
- if(gps){window.open("https://www.google.com/maps/search/?api=1&query="+gps.lat+","+gps.lon,"_blank");actionNote("Opening Maps…")}
+ if(gps){window.location.href="https://maps.apple.com/?ll="+gps.lat+","+gps.lon+"&q="+encodeURIComponent(placeName(gps));actionNote("Opening Maps…")}
  else actionNote("Waiting for GPS…");
 };
 $("#deleteBtn").onclick=async e=>{
