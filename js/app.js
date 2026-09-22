@@ -9,7 +9,7 @@ import{reverseGeocode}from "./services/location.js";
 import{initGlobe,updateGlobe,resizeGlobe,recenterGlobe,restoreGlobe}from "./globe.js";
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-let gps=null,selected=null,currentHeading=null,lastGeo={lat:null,lon:null,time:0},geoBusy=false,weatherBusy=false,lastWeather=null,lastWeatherAt=0,weatherRequestId=0;
+let gps=null,selected=null,currentHeading=null,lastGeo={lat:null,lon:null,time:0},geoBusy=false,weatherBusy=false,lastWeather=null,lastWeatherAt=0,weatherRequestId=0,lastAddress={lat:null,lon:null,place:"",address:"",postcode:"",district:"",state:"",country:""};
 const views={home:"homeView",position:"positionView",gps:"gpsView",address:"addressView",weather:"weatherView"};
 
 const infoDescriptions={
@@ -74,8 +74,8 @@ async function enrichPlace(p,force=false){
  try{
   const r=await reverseGeocode(p.lat,p.lon);
   if(r?.ok){
-   p.place=r.locality||r.label||p.place;p.address=r.address||p.address;p.postcode=r.postcode||p.postcode;
-   p.district=r.district||p.district;p.state=r.state||p.state;p.country=r.country||p.country;
+   const place=r.locality||r.label||p.place||"";const address=r.address||p.address||"";const postcode=r.postcode||p.postcode||"";const district=r.district||p.district||"";const state=r.state||p.state||"";const country=r.country||p.country||"";
+   Object.assign(lastAddress,{lat:p.lat,lon:p.lon,place,address,postcode,district,state,country});Object.assign(p,{place,address,postcode,district,state,country});
    if(!p.district&&p.lat>=10.1&&p.lat<=10.85&&p.lon>=75.9&&p.lon<=76.8)p.district="Thrissur";
    lastGeo={lat:p.lat,lon:p.lon,time:Date.now()};
    if(status)status.textContent="Address updated";
@@ -92,6 +92,8 @@ function renderAll(){
   return;
  }
  const p=gps,d=new Date(p.time||Date.now());
+ const a=lastAddress.lat!==null&&distanceMeters(lastAddress.lat,lastAddress.lon,p.lat,p.lon)<150?lastAddress:null;
+ if(a)Object.assign(p,{place:a.place,address:a.address,postcode:a.postcode,district:a.district,state:a.state,country:a.country});
  const pin=isIndiaForDigiPin(p.lat,p.lon)?getDigiPin(p.lat,p.lon):"Not available outside India";
  const heading=Number.isFinite(currentHeading)?currentHeading:Number.isFinite(p.heading)?p.heading:null;
  const head=Number.isFinite(heading)?Math.round(heading)+"° "+bearingName(heading):"Unavailable";
@@ -190,7 +192,7 @@ function show(v){
  history.replaceState({v},"","#"+v);
  window.scrollTo(0,0);
  if(v==="position"){renderSaved();setTimeout(()=>{resizeGlobe($("#positionGlobe"));if(gps)recenterGlobe($("#positionGlobe"),gps)},80)}
- if(v==="address"&&gps)enrichPlace(gps);
+ if(v==="address"&&gps){renderAll();if(!gps.address)enrichPlace(gps);}
  if(v==="weather"&&gps)renderWeather(true);
  if(v==="home"){restoreGlobe($("#globe"));if(gps)setTimeout(()=>recenterGlobe($("#globe"),gps),180);}
  renderAll();
@@ -250,6 +252,7 @@ function weatherTab(i){
  $("#weatherUpdated").textContent=title+" · provider not connected";
 }
 
+function bindWeatherTabs(){$(".weather-tabs button").forEach((b,i)=>b.onclick=e=>{e.preventDefault();e.stopPropagation();weatherTab(i)})}
 function wireEvents(){
  $$("[data-view]").forEach(b=>b.onclick=()=>show(b.dataset.view));
  $$("[data-back]").forEach(b=>b.onclick=()=>show("home"));
@@ -277,7 +280,7 @@ document.addEventListener("click",e=>{
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeInfo();if((e.key==="Enter"||e.key===" ")&&document.activeElement?.matches(".data-card,.weather-card")){e.preventDefault();document.activeElement.click()}});
 
 onHeading(h=>{currentHeading=(h+360)%360;if(gps)gps.heading=currentHeading;const hv=$("#headingValue"),hd=$("#headingDir"),cs=$("#compassStatus"),dial=$("#compassRing .compass-dial");if(hv)hv.textContent=Math.round(currentHeading)+"°";if(hd)hd.textContent=bearingName(currentHeading);if(cs)cs.textContent="Active";if(dial)dial.style.transform="rotate("+(-currentHeading)+"deg)";renderAll()});
-onGPS(p=>{gps=p;renderAll();if(p&&!p.error)enrichPlace(p);if(!p.error&&(!lastWeather||Date.now()-lastWeatherAt>300000)&&navigator.onLine)renderWeather(true)});
+onGPS(p=>{const moved=Number.isFinite(gps?.lat)&&Number.isFinite(gps?.lon)&&Number.isFinite(p?.lat)&&Number.isFinite(p?.lon)&&distanceMeters(gps.lat,gps.lon,p.lat,p.lon)>=150;if(moved){lastAddress={lat:null,lon:null,place:"",address:"",postcode:"",district:"",state:"",country:""};lastGeo={lat:null,lon:null,time:0}}gps=p;renderAll();if(p&&!p.error)enrichPlace(p);if(!p.error&&(!lastWeather||Date.now()-lastWeatherAt>300000)&&navigator.onLine)renderWeather(true)});
 
 let deferredInstallPrompt=null;
 function isStandalone(){return window.matchMedia?.("(display-mode: standalone)").matches||window.navigator.standalone===true}
@@ -293,6 +296,6 @@ window.addEventListener("resize",refreshGlobe);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshGlobe()});
 window.addEventListener("orientationchange",()=>setTimeout(refreshGlobe,180));
 
-wireEvents();updateInstallButton();
+wireEvents();bindWeatherTabs();updateInstallButton();
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});
 startGPS();show(location.hash.slice(1)||"home");
