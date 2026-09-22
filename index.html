@@ -14,7 +14,7 @@
 <title>My Location Info</title>
 <script>
 (async()=>{
-  const v="30";
+  const v="35";
   if(new URLSearchParams(location.search).get("reset-sw")===v){
     try{for(const r of await navigator.serviceWorker?.getRegistrations?.()||[])await r.unregister()}catch{}
     try{for(const k of await caches?.keys?.()||[])await caches.delete(k)}catch{}
@@ -64,7 +64,7 @@ window.addEventListener("DOMContentLoaded",()=>{
 <div id="app">
 <header class="topbar">
   <button class="icon-btn" id="settingsBtn" aria-label="GPS settings">⚙</button>
-  <div class="brand"><h1>My Location Info</h1><p>GPS updates offline</p><small class="build-version">GPS Diagnostic v33</small><button id="installBtn" class="install-pill" hidden>Install App</button></div>
+  <div class="brand"><h1>My Location Info</h1><p>GPS updates offline</p><small class="build-version">GPS</small><button id="installBtn" class="install-pill" hidden>Install App</button></div>
   <button class="icon-btn" id="infoBtn" aria-label="About">ⓘ</button>
 </header>
 
@@ -86,7 +86,7 @@ window.addEventListener("DOMContentLoaded",()=>{
 </section>
 
 <section id="position" class="view detail">
-  <div class="page-head"><button class="back" data-back>‹</button><div><h2>Position</h2><p>Where exactly am I?</p></div><span></span></div>
+  <div class="page-head"><button class="back" data-back aria-label="Back to Home">‹</button><div><h2>Position</h2><p>Where exactly am I?</p></div><span></span></div>
   <div class="panel position-hero"><div id="positionGlobe" class="mini-globe"></div><div><b id="placeName">Waiting for GPS…</b><strong id="latlon">—</strong><small id="accuracy">Accuracy —</small></div></div>
   <div id="positionData" class="data-grid"></div>
   <div class="action-bar"><button id="saveBtn">SAVE</button><button id="shareBtn">SHARE</button><button id="mapBtn">MAP</button></div>
@@ -99,13 +99,13 @@ window.addEventListener("DOMContentLoaded",()=>{
 </section>
 
 <section id="address" class="view detail">
-  <div class="page-head"><button class="back" data-back>‹</button><div><h2>Address</h2><p>What place is this?</p></div><button id="addressRefresh" class="icon-btn small">↻</button></div>
+  <div class="page-head"><button class="back" data-back>‹</button><div><h2>Address</h2><p>What place is this?</p></div><button id="addressRefresh" class="icon-btn small" aria-label="Refresh address">↻</button></div>
   <div class="panel"><small id="addressStatus">Waiting for GPS</small><div id="addressText" class="address-text">Address will be available when connected.</div><button id="copyAddress" class="wide-btn">COPY ADDRESS</button></div>
   <div id="addressData" class="data-grid"></div>
 </section>
 
 <section id="weather" class="view detail">
-  <div class="page-head"><button class="back" data-back>‹</button><div><h2>Weather</h2><p>What's happening here?</p></div><button id="weatherRefresh" class="icon-btn small">↻</button></div>
+  <div class="page-head"><button class="back" data-back>‹</button><div><h2>Weather</h2><p>What's happening here?</p></div><button id="weatherRefresh" class="icon-btn small" aria-label="Refresh weather">↻</button></div>
   <div class="panel weather-hero"><div><b id="weatherTemp">—</b><strong id="weatherCondition">Waiting for GPS</strong><small id="weatherUpdated">Weather needs a connection.</small></div><span>☁</span></div>
   <div id="weatherGrid" class="data-grid"></div>
 </section>
@@ -114,9 +114,9 @@ window.addEventListener("DOMContentLoaded",()=>{
 <div id="infoSheet" class="info-sheet" hidden><div class="sheet-bg"></div><div class="sheet-box"><button id="sheetClose">×</button><div id="sheetSymbol">◎</div><h3 id="sheetTitle">Information</h3><p id="sheetText"></p></div></div>
 <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
 <script>
-if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js?v=33").catch(()=>{}))}
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js?v=35").catch(()=>{}))}
 </script>
-<script type="module" src="js/app.js?v=33"></script>
+<script type="module" src="js/app.js?v=35"></script>
 <script>
 window.addEventListener("DOMContentLoaded",()=>{
  setTimeout(()=>{
