@@ -6,7 +6,7 @@ async function fetchWithTimeout(url,ms=9000){
 }
 export async function getWeather(lat=null,lon=null){
  if(!Number.isFinite(lat)||!Number.isFinite(lon)||!navigator.onLine)return{ok:false,message:"Weather will be available when data is connected."};
- try{const q=new URL("./functions/api/weather.js",location.href);q.searchParams.set("lat",lat.toFixed(6));q.searchParams.set("lon",lon.toFixed(6));const d=await fetchWithTimeout(q.toString(),9000);if(d?.ok)return d}catch{}
+ try{const q=new URL("/api/weather",location.origin);q.searchParams.set("lat",lat.toFixed(6));q.searchParams.set("lon",lon.toFixed(6));const d=await fetchWithTimeout(q.toString(),9000);if(d?.ok)return d}catch{}
  try{
   const u=new URL(FALLBACK_URL);
   u.searchParams.set("latitude",lat.toFixed(6));u.searchParams.set("longitude",lon.toFixed(6));
