@@ -49,7 +49,7 @@ function render(){
  if(!p||!Number.isFinite(p.lat)||!Number.isFinite(p.lon)){
   overlay?.classList.remove("ok");
   if(p?.error){overlay?.classList.add("error");overlay.querySelector("b").textContent=p.error+" · Tap to retry"}
-  else overlay?.querySelector("b").textContent="Getting GPS…";
+  else if(overlay)overlay.querySelector("b").textContent="Getting GPS…";
   if(status)status.textContent=p?.error||"GPS starting · Drag · pinch · zoom";
   $("placeName").textContent="Waiting for GPS…";$("latlon").textContent="—";$("accuracy").textContent="Accuracy —";
   $("positionData").innerHTML=[
