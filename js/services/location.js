@@ -1,5 +1,6 @@
 const BDC="https://api.bigdatacloud.net/data/reverse-geocode-client";
 const NOMINATIM="https://nominatim.openstreetmap.org/reverse";
+const PHOTON="https://photon.komoot.io/reverse";
 async function fetchJSON(url,ms=8000){
  const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);
  try{const r=await fetch(url,{method:"GET",cache:"no-store",signal:c.signal,headers:{"Accept":"application/json"}});if(!r.ok)throw new Error(String(r.status));return await r.json()}finally{clearTimeout(t)}
@@ -24,6 +25,11 @@ export async function reverseGeocode(lat,lon){
  }catch{}
  try{
   const u=new URL(NOMINATIM);u.searchParams.set("lat",lat);u.searchParams.set("lon",lon);u.searchParams.set("format","jsonv2");u.searchParams.set("zoom","18");u.searchParams.set("addressdetails","1");u.searchParams.set("accept-language","en");
-  return normalise(await fetchJSON(u.toString()));
- }catch{return{ok:false}}
+  try{
+   const u=new URL(PHOTON);u.searchParams.set("lat",lat);u.searchParams.set("lon",lon);
+   const d=await fetchJSON(u.toString());
+   const f=d.features?.[0]?.properties||{};
+   return normalise({address:{road:f.street,suburb:f.suburb,district:f.district,city:f.city||f.town||f.village,postcode:f.postcode,country:f.country,state:f.state},city:f.city||f.town||f.village,principalSubdivision:f.state,countryName:f.country,postcode:f.postcode,locality:f.suburb});
+  }catch{return{ok:false}}
+ }
 }
