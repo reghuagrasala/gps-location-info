@@ -1,4 +1,4 @@
-const CACHE='my-location-info-v2';
+const CACHE='my-location-info-v3';
 const APP=['./','./index.html','./app.css','./app.js','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(APP)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!=='my-location-info-v2').map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
