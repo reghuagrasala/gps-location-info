@@ -23,4 +23,19 @@ function orient(e){const h=typeof e.webkitCompassHeading==='number'?e.webkitComp
 function navigateFromButton(button){const v=button?.dataset?.view;if(!v)return;open(v)}
 document.querySelectorAll('.nav button,[data-view].home-card').forEach(button=>{button.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();navigateFromButton(button)})});
 document.addEventListener('click',e=>{if(e.target.closest('#back'))open('home');if(e.target.closest('#compass'))compass();if(e.target.closest('#fresh'))freshGPS();if(e.target.closest('#refreshAddr'))getAddress(true);if(e.target.closest('#refreshWx'))getWeather(true);if(e.target.closest('#info'))toast('GPS works offline. Address and weather need online data.');if(e.target.closest('#settings'))toast('Settings are intentionally compact.');const c=e.target.closest('[data-copy]');if(c)navigator.clipboard?.writeText(c.dataset.copy).then(()=>toast('Copied')).catch(()=>toast('Copy unavailable'))});
-addEventListener('online',()=>{S.online=true;updateHome();if(S.pos){getAddress(true);getWeather(true)}if(S.view!=='home')render()});addEventListener('offline',()=>{S.online=false;updateHome();if(S.view!=='home')render()});document.addEventListener('visibilitychange',()=>{if(!document.hidden){freshGPS();if(S.online&&S.pos){getAddress(true);getWeather(true)}}});addEventListener('load',()=>{if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});initMap();startGPS();updateHome()});
+addEventListener('online',()=>{S.online=true;updateHome();if(S.pos){getAddress(true);getWeather(true)}if(S.view!=='home')render()});addEventListener('offline',()=>{S.online=false;updateHome();if(S.view!=='home')render()});document.addEventListener('visibilitychange',()=>{if(!document.hidden){freshGPS();if(S.online&&S.pos){getAddress(true);getWeather(true)}}});function realignHome(){if(S.view!=='home'||!S.mapReady||!S.pos)return;requestAnimationFrame(()=>{S.map.resize();center(true);setTimeout(()=>{if(S.view==='home'&&S.pos){S.map.resize();center(true)}},350)})}
+if('serviceWorker'in navigator){
+ navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload());
+}
+addEventListener('load',async()=>{
+ if('serviceWorker'in navigator){
+   try{const reg=await navigator.serviceWorker.register('./sw.js');await reg.update()}catch{}
+ }
+ initMap();
+ startGPS();
+ updateHome();
+ setTimeout(realignHome,250);
+ setTimeout(realignHome,900);
+});
+addEventListener('pageshow',()=>{if(document.visibilityState!=='hidden')realignHome()});
+addEventListener('resize',()=>{if(S.view==='home'&&S.mapReady){S.map.resize();setTimeout(realignHome,80)}});
