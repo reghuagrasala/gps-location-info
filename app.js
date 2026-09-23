@@ -31,12 +31,6 @@ function bindNavigation(){
  addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(['position','gps','address','weather'].includes(v))open(v);else if(!v)open('home')});
 }
 document.addEventListener('click',e=>{
-   const b=e.target.closest('.nav button,.home-card[data-view]');
-   if(!b)return;
-   e.preventDefault();e.stopPropagation();navigateFromButton(b);
- },true);
-}
-document.addEventListener('click',e=>{
  const navButton=e.target.closest('.nav button,.home-card[data-view]');
  if(navButton)return;
  if(e.target.closest('#back'))open('home');
