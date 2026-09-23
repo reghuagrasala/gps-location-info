@@ -12,7 +12,12 @@ async function getAddress(force=false){if(!S.pos||!S.online||(!force&&Date.now()
 function wt(c){return({0:'Clear',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',51:'Drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',80:'Rain showers',81:'Rain showers',82:'Heavy showers',95:'Thunderstorm',96:'Thunderstorm',99:'Thunderstorm'})[c]||'Weather'}function wi(c){return c===0?'☀︎':[1,2].includes(c)?'◐':[3,45,48].includes(c)?'☁':c>=95?'ϟ':c>=51?'☂':'•'}
 async function getWeather(force=false){if(!S.pos||!S.online||(!force&&Date.now()-S.lastWeather<600000))return;S.lastWeather=Date.now();try{let d=C.weatherProxy?await json(`${C.weatherProxy}?lat=${S.pos.latitude}&lon=${S.pos.longitude}`):null;if(!d){const u=new URL('https://api.open-meteo.com/v1/forecast');u.searchParams.set('latitude',S.pos.latitude);u.searchParams.set('longitude',S.pos.longitude);u.searchParams.set('current','temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m');u.searchParams.set('daily','weather_code,temperature_2m_max,temperature_2m_min');u.searchParams.set('forecast_days','5');u.searchParams.set('timezone','auto');d=await json(u)}S.weather={c:d.current.weather_code,t:d.current.temperature_2m,feel:d.current.apparent_temperature,hum:d.current.relative_humidity_2m,cloud:d.current.cloud_cover,wind:d.current.wind_speed_10m,dir:d.current.wind_direction_10m,rain:d.current.precipitation,daily:d.daily,time:Date.now()};save(C.weatherKey,S.weather);updateHome();if(S.view==='weather')render()}catch{S.weather=load(C.weatherKey)||S.weather;updateHome();if(S.view==='weather')render()}}
 function updateHome(){const p=S.pos;$('hPos').textContent=p?`${n(p.latitude,4)}°, ${n(p.longitude,4)}°`:'Waiting…';$('hPos2').textContent=p?`${n(p.altitude,0)} m altitude`:'GPS';$('hGps').textContent=p?`±${Math.round(p.accuracy||0)} m`:'Waiting…';$('hGps2').textContent=p?.speed!=null?`${kmh(p.speed)} km/h`:'Accuracy';$('hAddr').textContent=S.address?.city||S.address?.display?.split(',')[0]||(p?'Address pending':'Waiting…');$('hWeather').textContent=S.weather?`${Math.round(S.weather.t)}° · ${wt(S.weather.c)}`:'Waiting…';$('hWeather2').textContent=S.weather?(S.online?'Updated online':'Saved offline'):(S.online?'Weather pending':'Weather unavailable offline');$('homeFoot').textContent=S.online?'GPS is provided by your device. Online data can refresh address and weather.':'Offline: GPS continues. Address and weather use the last saved result.'}
-function initMap(){S.map=new maplibregl.Map({container:'globe',style:{version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},layers:[{id:'osm',type:'raster',source:'osm'}],projection:{type:'globe'}},center:[78.96,20.59],zoom:2.35,dragRotate:false,pitchWithRotate:false});S.map.follow=true;S.map.programmatic=false;S.map.on('load',()=>{S.mapReady=true;if(S.pos)center(true);updateMarker()});S.map.on('dragstart',()=>{if(!S.map.programmatic)S.map.follow=false});S.map.on('zoomstart',()=>{if(!S.map.programmatic)S.map.follow=false})}
+function initMap(){S.map=new maplibregl.Map({container:'globe',style:{version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},layers:[{id:'osm',type:'raster',source:'osm'}],projection:{type:'globe'}},center:[78.96,20.59],zoom:2.35,dragRotate:false,pitchWithRotate:false});S.map.follow=true;S.map.programmatic=false;S.map.on('load',()=>{S.mapReady=true;if(S.pos)center(true);updateMarker()});let realignTimer;
+ const scheduleRealign=()=>{clearTimeout(realignTimer);realignTimer=setTimeout(()=>{if(S.view==='home'&&S.mapReady&&S.pos&&!S.map.isMoving())center(true)},1800)};
+ S.map.on('dragstart',()=>{if(!S.map.programmatic){S.map.follow=false;clearTimeout(realignTimer)}});
+ S.map.on('dragend',scheduleRealign);
+ S.map.on('zoomstart',()=>{if(!S.map.programmatic){S.map.follow=false;clearTimeout(realignTimer)}});
+ S.map.on('zoomend',scheduleRealign);}
 function center(initial=false){if(!S.mapReady||!S.pos)return;S.map.follow=true;S.map.programmatic=true;S.map.resize();const target={center:[S.pos.longitude,S.pos.latitude],zoom:initial?2.7:S.map.getZoom()};if(initial)S.map.jumpTo(target);else S.map.easeTo({...target,duration:450,essential:true});requestAnimationFrame(()=>{S.map.resize();S.map.jumpTo({center:target.center,zoom:target.zoom});S.map.programmatic=false;S.map.follow=true})}
 function updateMarker(){if(!S.mapReady||!S.pos)return;const p=S.pos,place=S.address?.city||S.address?.display?.split(',')[0]||'Current position',d=new Date(),el=document.createElement('div');el.className='gps-marker';el.innerHTML=`<div class="gps-bubble"><strong>${esc(place)}</strong><span>${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span><span>${d.toLocaleDateString([],{day:'2-digit',month:'short',year:'numeric'})}</span></div><div class="gps-dot"></div>`;S.marker?.remove();S.marker=new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([p.longitude,p.latitude]).addTo(S.map);if(S.map.follow===undefined)center(true)}
 function metric(a,b){return`<div class="metric"><label>${esc(a)}</label><strong>${esc(b)}</strong></div>`}function empty(a,b){return`<div class="empty"><i>⌖</i><b>${esc(a)}</b><span>${esc(b)}</span></div>`}
@@ -21,9 +26,24 @@ function open(v){if(!['home','position','gps','address','weather'].includes(v))r
 async function compass(){if(S.compass){S.compass=false;removeEventListener('deviceorientationabsolute',orient);removeEventListener('deviceorientation',orient);$('compass').textContent='N';return}try{if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'&&await DeviceOrientationEvent.requestPermission()!=='granted')return toast('Compass permission was not granted.');S.compass=true;addEventListener('deviceorientationabsolute',orient,true);addEventListener('deviceorientation',orient,true);toast('Compass active')}catch{toast('Compass is not available.')}}
 function orient(e){const h=typeof e.webkitCompassHeading==='number'?e.webkitCompassHeading:(e.absolute&&typeof e.alpha==='number'?(360-e.alpha)%360:null);if(h==null)return;$('compass').textContent=`${Math.round(h)}°`}
 function navigateFromButton(button){const v=button?.dataset?.view;if(!v)return;open(v)}
-document.addEventListener('pointerup',e=>{const button=e.target.closest('.nav button,[data-view].home-card');if(!button)return;e.preventDefault();navigateFromButton(button)},true);
-document.addEventListener('click',e=>{const button=e.target.closest('.nav button,[data-view].home-card');if(button){e.preventDefault();e.stopPropagation()}});
-document.addEventListener('click',e=>{if(e.target.closest('#back'))open('home');if(e.target.closest('#compass'))compass();if(e.target.closest('#fresh'))freshGPS();if(e.target.closest('#refreshAddr'))getAddress(true);if(e.target.closest('#refreshWx'))getWeather(true);if(e.target.closest('#info'))toast('GPS works offline. Address and weather need online data.');if(e.target.closest('#settings'))toast('Settings are intentionally compact.');const c=e.target.closest('[data-copy]');if(c)navigator.clipboard?.writeText(c.dataset.copy).then(()=>toast('Copied')).catch(()=>toast('Copy unavailable'))});
+function bindNavigation(){
+ document.querySelectorAll('.nav button,.home-card[data-view]').forEach(button=>{
+   button.addEventListener('click',e=>{e.stopPropagation();navigateFromButton(button)});
+ });
+}
+document.addEventListener('click',e=>{
+ const navButton=e.target.closest('.nav button,.home-card[data-view]');
+ if(navButton)return;
+ if(e.target.closest('#back'))open('home');
+ if(e.target.closest('#compass'))compass();
+ if(e.target.closest('#fresh'))freshGPS();
+ if(e.target.closest('#refreshAddr'))getAddress(true);
+ if(e.target.closest('#refreshWx'))getWeather(true);
+ if(e.target.closest('#info'))toast('GPS works offline. Address and weather need online data.');
+ if(e.target.closest('#settings'))toast('Settings are intentionally compact.');
+ const c=e.target.closest('[data-copy]');
+ if(c)navigator.clipboard?.writeText(c.dataset.copy).then(()=>toast('Copied')).catch(()=>toast('Copy unavailable'));
+});
 addEventListener('online',()=>{S.online=true;updateHome();if(S.pos){getAddress(true);getWeather(true)}if(S.view!=='home')render()});addEventListener('offline',()=>{S.online=false;updateHome();if(S.view!=='home')render()});document.addEventListener('visibilitychange',()=>{if(!document.hidden){freshGPS();if(S.online&&S.pos){getAddress(true);getWeather(true)}}});function realignHome(){if(S.view!=='home'||!S.mapReady||!S.pos)return;requestAnimationFrame(()=>{S.map.resize();center(true);setTimeout(()=>{if(S.view==='home'&&S.pos){S.map.resize();center(true)}},350)})}
 if('serviceWorker'in navigator){
  navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload());
@@ -35,6 +55,7 @@ addEventListener('load',async()=>{
  if('serviceWorker'in navigator){
    try{const reg=await navigator.serviceWorker.register('./sw.js');await reg.update()}catch{}
  }
+ bindNavigation();
  initMap();
  startGPS();
  updateHome();
