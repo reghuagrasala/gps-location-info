@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0f0f0f"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./app.css">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.10.0/dist/maplibre-gl.css">
+<title>My Location Info</title>
+</head>
+<body>
+<main class="app" id="app">
+<section class="home" id="home">
+<header class="home-head"><button class="head-btn" id="settings" aria-label="Settings">⚙</button><div><h1>My Location Info</h1><p>GPS updates offline</p></div><button class="head-btn" id="info" aria-label="Information">ⓘ</button></header>
+<div class="globe-card"><div id="globe"></div><div class="map-status" id="mapStatus">Waiting for GPS…</div></div>
+<div class="home-grid">
+<button class="home-card" data-view="position"><b>Position</b><strong id="hPos">Waiting…</strong><small id="hPos2">GPS</small></button>
+<button class="home-card" data-view="gps"><b>GPS Data</b><strong id="hGps">Waiting…</strong><small id="hGps2">Accuracy</small></button>
+<button class="home-card" data-view="address"><b>Address</b><strong id="hAddr">Waiting…</strong><small>Last result kept offline</small></button>
+<button class="home-card" data-view="weather"><b>Weather</b><strong id="hWeather">Waiting…</strong><small id="hWeather2">Last result kept offline</small></button>
+</div><footer id="homeFoot">GPS is provided by your device.</footer>
+</section>
+<section class="detail" id="detail" hidden>
+<header class="detail-head"><button class="back" id="back" aria-label="Back">‹</button><div><h2 id="title">Position</h2><p id="subtitle">Current device position</p></div><button class="compass" id="compass" aria-label="Compass">N</button></header>
+<div class="scroll" id="scroll"><div id="content"></div></div>
+<nav class="nav"><button data-view="position"><span>⌖</span>Position</button><button data-view="gps"><span>◎</span>GPS</button><button data-view="address"><span>⌖</span>Address</button><button data-view="weather"><span>☁</span>Weather</button></nav>
+</section>
+</main><div class="toast" id="toast"></div>
+<script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
+<script type="module" src="./app.js"></script>
+</body></html>
