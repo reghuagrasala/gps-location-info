@@ -28,17 +28,9 @@ async function compass(){if(S.compass){S.compass=false;removeEventListener('devi
 function orient(e){const h=typeof e.webkitCompassHeading==='number'?e.webkitCompassHeading:(e.absolute&&typeof e.alpha==='number'?(360-e.alpha)%360:null);if(h==null)return;$('compass').textContent=`${Math.round(h)}°`}
 function navigateFromButton(button){const v=button?.dataset?.view;if(v)open(v)}
 function bindNavigation(){
- document.addEventListener('touchend',e=>{
-   const b=e.target.closest('.nav button,.home-card[data-view]');
-   if(!b)return;
-   e.preventDefault();e.stopPropagation();navigateFromButton(b);
- },{capture:true,passive:false});
- document.addEventListener('pointerup',e=>{
-   const b=e.target.closest('.nav button,.home-card[data-view]');
-   if(!b)return;
-   e.preventDefault();e.stopPropagation();navigateFromButton(b);
- },true);
- document.addEventListener('click',e=>{
+ addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(['position','gps','address','weather'].includes(v))open(v);else if(!v)open('home')});
+}
+document.addEventListener('click',e=>{
    const b=e.target.closest('.nav button,.home-card[data-view]');
    if(!b)return;
    e.preventDefault();e.stopPropagation();navigateFromButton(b);
@@ -65,6 +57,8 @@ function setAppHeight(){document.documentElement.style.setProperty('--app-height
 setAppHeight();
 addEventListener('orientationchange',()=>setTimeout(setAppHeight,100));
 addEventListener('load',async()=>{
+ const initialView=location.hash.slice(1);
+ if(['position','gps','address','weather'].includes(initialView)) open(initialView);
  if('serviceWorker'in navigator){
    try{const reg=await navigator.serviceWorker.register('./sw.js');await reg.update()}catch{}
  }
