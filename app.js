@@ -1,12 +1,56 @@
 import * as maplibregl from 'https://unpkg.com/maplibre-gl@6.10.0/dist/maplibre-gl.mjs';
-const C={addressProxy:'',weatherProxy:'',addrKey:'ml-address-v1',weatherKey:'ml-weather-v1',gpsKey:'ml-gps-v1'},S={view:'home',pos:null,address:null,weather:null,online:navigator.onLine,map:null,marker:null,mapReady:false,lastAddr:0,lastWeather:0,compass:false};
+const C={addressProxy:'',weatherProxy:'',addrKey:'ml-address-v1',weatherKey:'ml-weather-v1',gpsKey:'ml-gps-v1'},S={view:'home',pos:null,address:null,weather:null,online:navigator.onLine,map:null,marker:null,mapReady:false,lastAddr:0,lastWeather:0,compass:false,compassHeading:null,gpsWatchId:null,gpsActive:false,moving:false};
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),n=(v,d=6)=>Number.isFinite(v)?Number(v).toFixed(d):'—',kmh=v=>Number.isFinite(v)?(v*3.6).toFixed(1):'—',save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}},load=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').classList.remove('show'),2200)}
 function dist(a,b){const r=Math.PI/180,R=6371000,x=(b.latitude-a.latitude)*r,y=(b.longitude-a.longitude)*r,q=Math.sin(x/2)**2+Math.cos(a.latitude*r)*Math.cos(b.latitude*r)*Math.sin(y/2)**2;return 2*R*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
-function startGPS(){if(!navigator.geolocation)return toast('Device GPS is not available.');const c=load(C.gpsKey);if(c)setPos(c,true);navigator.geolocation.getCurrentPosition(p=>setPos(p.coords),gpsError,{enableHighAccuracy:true,maximumAge:0,timeout:15000});navigator.geolocation.watchPosition(p=>setPos(p.coords),gpsError,{enableHighAccuracy:true,maximumAge:2000,timeout:20000})}
-function freshGPS(){navigator.geolocation?.getCurrentPosition(p=>setPos(p.coords),gpsError,{enableHighAccuracy:true,maximumAge:0,timeout:12000})}
+function startGPS(){
+ if(!navigator.geolocation){$('mapStatus').textContent='GPS unavailable on this device.';return}
+ if(S.gpsWatchId!==null){navigator.geolocation.clearWatch(S.gpsWatchId);S.gpsWatchId=null}
+ S.gpsActive=true;
+ const c=load(C.gpsKey);if(c)setPos(c,true);
+ $('mapStatus').textContent='GPS ON · waiting for fix';
+ navigator.geolocation.getCurrentPosition(
+   p=>setPos(p.coords),
+   gpsError,
+   {enableHighAccuracy:true,maximumAge:0,timeout:15000}
+ );
+ S.gpsWatchId=navigator.geolocation.watchPosition(
+   p=>setPos(p.coords),
+   gpsError,
+   {enableHighAccuracy:true,maximumAge:2000,timeout:20000}
+ );
+}
+function stopGPS(){
+ if(S.gpsWatchId!==null)navigator.geolocation.clearWatch(S.gpsWatchId);
+ S.gpsWatchId=null;S.gpsActive=false;
+ $('mapStatus').textContent='GPS OFF';
+}
+function freshGPS(){
+ if(!navigator.geolocation){$('mapStatus').textContent='GPS unavailable on this device.';return}
+ navigator.geolocation.getCurrentPosition(
+   p=>setPos(p.coords),
+   gpsError,
+   {enableHighAccuracy:true,maximumAge:0,timeout:12000}
+ );
+}
 function gpsError(e){$('mapStatus').textContent=e.code===1?'Location permission is off.':e.code===3?'GPS request timed out.':'Waiting for a GPS fix.'}
-function setPos(c,cached=false){if(!c||!Number.isFinite(c.latitude))return;const old=S.pos;S.pos={latitude:c.latitude,longitude:c.longitude,accuracy:c.accuracy,altitude:c.altitude,speed:c.speed,heading:c.heading,time:Date.now()};save(C.gpsKey,S.pos);updateHome();updateMarker();if(S.mapReady&&S.map.follow&&old&&dist(old,S.pos)>60)center(false);$('mapStatus').textContent=cached?'Cached GPS position':`GPS ±${Math.round(c.accuracy||0)} m`;if(S.view!=='home')render();const moved=old?dist(old,S.pos):Infinity;if(S.online&&(moved>60||Date.now()-S.lastAddr>120000))getAddress();if(S.online&&(moved>100||Date.now()-S.lastWeather>600000))getWeather()}
+function setPos(c,cached=false){
+ if(!c||!Number.isFinite(c.latitude)||!Number.isFinite(c.longitude))return;
+ const old=S.pos;
+ S.pos={latitude:c.latitude,longitude:c.longitude,accuracy:c.accuracy,altitude:c.altitude,speed:c.speed,heading:c.heading,time:Date.now()};
+ const accuracy=Number.isFinite(c.accuracy)?c.accuracy:Infinity;
+ S.moving=Number.isFinite(c.speed)&&c.speed*3.6>1.5;
+ save(C.gpsKey,S.pos);
+ updateHome();updateMarker();
+ if(S.mapReady&&S.map.follow&&old&&dist(old,S.pos)>60)center(false);
+ if(cached)$('mapStatus').textContent='Cached GPS position';
+ else if(accuracy>100)$('mapStatus').textContent=`GPS WEAK · ±${Math.round(accuracy)} m`;
+ else $('mapStatus').textContent=`GPS ON · ±${Math.round(accuracy||0)} m`;
+ if(S.view!=='home')render();
+ const moved=old?dist(old,S.pos):Infinity;
+ if(S.online&&(moved>60||Date.now()-S.lastAddr>120000))getAddress();
+ if(S.online&&(moved>100||Date.now()-S.lastWeather>600000))getWeather();
+}
 async function json(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error(r.status);return r.json()}
 async function getAddress(force=false){if(!S.pos||!S.online||(!force&&Date.now()-S.lastAddr<60000))return;S.lastAddr=Date.now();try{let d=C.addressProxy?await json(`${C.addressProxy}?lat=${S.pos.latitude}&lon=${S.pos.longitude}`):null;d??=await json(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${S.pos.latitude}&longitude=${S.pos.longitude}&localityLanguage=en`);S.address={display:d.display_name||[d.locality||d.city||d.town||d.village,d.principalSubdivision,d.countryName].filter(Boolean).join(', '),city:d.locality||d.city||d.town||d.village||'',time:Date.now()};save(C.addrKey,S.address);updateHome();updateMarker();if(S.view==='address')render()}catch{S.address=load(C.addrKey)||S.address;updateHome();updateMarker();if(S.view==='address')render()}}
 function wt(c){return({0:'Clear',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',51:'Drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',80:'Rain showers',81:'Rain showers',82:'Heavy showers',95:'Thunderstorm',96:'Thunderstorm',99:'Thunderstorm'})[c]||'Weather'}function wi(c){return c===0?'☀︎':[1,2].includes(c)?'◐':[3,45,48].includes(c)?'☁':c>=95?'ϟ':c>=51?'☂':'•'}
@@ -24,8 +68,43 @@ function metric(a,b){return`<div class="metric"><label>${esc(a)}</label><strong>
 function render(){const cfg={position:['Position','Current device position'],gps:['GPS Data','Live browser GPS'],address:['Address','Online lookup with offline last result'],weather:['Weather','Current conditions and forecast']}[S.view];$('title').textContent=cfg[0];$('subtitle').textContent=cfg[1];document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===S.view));const p=S.pos;if(S.view==='position')$('content').innerHTML=p?`<div class="card"><div class="status"><h3>Current position</h3><span class="pill">LIVE GPS</span></div><div class="grid2">${metric('Latitude',`${n(p.latitude)}°`)}${metric('Longitude',`${n(p.longitude)}°`)}${metric('Altitude',`${n(p.altitude,1)} m`)}${metric('Accuracy',`± ${n(p.accuracy,0)} m`)}${metric('Speed',`${kmh(p.speed)} km/h`)}${metric('Heading',p.heading==null?'—':`${Math.round(p.heading)}°`)}${metric('Updated',new Date(p.time).toLocaleTimeString())}${metric('Source','Device GPS')}</div></div><div class="card"><h3>Coordinates</h3><p class="address">${n(p.latitude)}, ${n(p.longitude)}</p><div class="actions"><button class="action gold" data-copy="${n(p.latitude)}, ${n(p.longitude)}">Copy coordinates</button></div></div>`:empty('Waiting for GPS','GPS continues without internet.');if(S.view==='gps')$('content').innerHTML=`<div class="card"><div class="status"><h3>GPS status</h3><span class="pill ${S.online?'':'off'}">${S.online?'ONLINE DATA':'OFFLINE'}</span></div><div class="grid2">${metric('Fix',p?'Valid position':'Waiting for fix')}${metric('Accuracy',p?`± ${n(p.accuracy,0)} m`:'—')}${metric('Latitude',p?n(p.latitude):'—')}${metric('Longitude',p?n(p.longitude):'—')}${metric('Movement',p&&p.speed!=null?`${kmh(p.speed)} km/h`:'Unknown')}${metric('Network',S.online?'Connected':'Offline')}</div></div><div class="card"><h3>GPS behaviour</h3><p class="muted">High-accuracy getCurrentPosition starts immediately and watchPosition keeps updating while travelling. Internet is not required for coordinates.</p><div class="actions"><button class="action gold" id="fresh">Request fresh GPS</button></div></div><div class="card"><h3>Mini compass</h3><p class="muted">The compass stays in the header. Tap the small N control above to activate device orientation.</p></div>`;if(S.view==='address')$('content').innerHTML=S.address?`<div class="card"><div class="status"><h3>Current address</h3><span class="pill ${S.online?'':'off'}">${S.online?'ONLINE':'CACHED'}</span></div><p class="address">${esc(S.address.display)}</p><p class="muted">Last successful lookup: ${new Date(S.address.time).toLocaleString()}</p><div class="actions"><button class="action gold" id="refreshAddr">Refresh address</button><button class="action" data-copy="${esc(S.address.display)}">Copy address</button></div></div>`:empty(S.online?'Fetching address…':'Address will be available when data is connected.','GPS remains available offline; the last successfully fetched address is kept.');if(S.view==='weather')$('content').innerHTML=S.weather?`<div class="card"><div class="status"><h3>Current weather</h3><span class="pill ${S.online?'':'off'}">${S.online?'ONLINE':'CACHED'}</span></div><div class="temp">${Math.round(S.weather.t)}°</div><div class="condition">${wi(S.weather.c)} ${wt(S.weather.c)}</div><div class="grid3" style="margin-top:14px">${metric('Feels like',`${Math.round(S.weather.feel)}°`)}${metric('Humidity',`${S.weather.hum}%`)}${metric('Cloud',`${S.weather.cloud}%`)}${metric('Wind',`${Math.round(S.weather.wind)} km/h`)}${metric('Wind dir',`${Math.round(S.weather.dir)}°`)}${metric('Rain',`${S.weather.rain} mm`)}</div><div class="actions"><button class="action gold" id="refreshWx">Refresh weather</button></div></div><div class="card"><h3>Forecast</h3><div class="forecast">${(S.weather.daily?.time||[]).slice(0,3).map((d,i)=>`<div class="day"><b>${new Date(d).toLocaleDateString([],{weekday:'short'})}</b><span>${wi(S.weather.daily.weather_code?.[i])}</span><small>${Math.round(S.weather.daily.temperature_2m_max?.[i]??0)}° / ${Math.round(S.weather.daily.temperature_2m_min?.[i]??0)}°</small></div>`).join('')}</div></div>`:empty(S.online?'Fetching weather…':'Weather will be available when data is connected.','The last successfully fetched weather is kept locally.')}
 window.__openView=v=>{open(v);return false};
 function open(v){if(!['home','position','gps','address','weather'].includes(v))return;S.view=v;$('home').hidden=v!=='home';$('detail').hidden=v==='home';if(v!=='home'){$('scroll').scrollTop=0;render()}else requestAnimationFrame(()=>{if(S.mapReady&&S.pos){S.map.resize();center(true);setTimeout(()=>{if(S.view==='home'&&S.pos)center(true)},250)}})}
-async function compass(){if(S.compass){S.compass=false;removeEventListener('deviceorientationabsolute',orient);removeEventListener('deviceorientation',orient);$('compass').textContent='N';return}try{if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'&&await DeviceOrientationEvent.requestPermission()!=='granted')return toast('Compass permission was not granted.');S.compass=true;addEventListener('deviceorientationabsolute',orient,true);addEventListener('deviceorientation',orient,true);toast('Compass active')}catch{toast('Compass is not available.')}}
-function orient(e){const h=typeof e.webkitCompassHeading==='number'?e.webkitCompassHeading:(e.absolute&&typeof e.alpha==='number'?(360-e.alpha)%360:null);if(h==null)return;$('compass').textContent=`${Math.round(h)}°`}
+function normalizeHeading(v){v=Number(v);if(!Number.isFinite(v))return null;return ((v%360)+360)%360}
+function headingDirection(v){return ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(v/22.5)%16]}
+function updateCompassDisplay(h){
+ const raw=normalizeHeading(h);if(raw===null)return;
+ const rounded=Math.round(raw)%360;
+ S.compassHeading=raw;
+ $('compass').textContent=`${String(rounded).padStart(3,'0')}° ${headingDirection(raw)}`;
+}
+function orient(e){
+ let h=null;
+ if(Number.isFinite(Number(e.webkitCompassHeading))&&Number(e.webkitCompassHeading)>=0)h=Number(e.webkitCompassHeading);
+ else if(Number.isFinite(Number(e.alpha))){
+   const a=Number(screen.orientation?.angle)||Number(window.orientation)||0;
+   h=360-Number(e.alpha)+a;
+ }
+ if(h!==null)updateCompassDisplay(h);
+}
+async function compass(){
+ if(S.compass){
+   S.compass=false;
+   removeEventListener('deviceorientationabsolute',orient);
+   removeEventListener('deviceorientation',orient);
+   $('compass').textContent='N';
+   return;
+ }
+ try{
+   if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
+     const r=await DeviceOrientationEvent.requestPermission();
+     if(r!=='granted'){toast('Compass permission was not granted.');return}
+   }
+   S.compass=true;
+   addEventListener('deviceorientationabsolute',orient,true);
+   addEventListener('deviceorientation',orient,true);
+   $('compass').textContent=S.compassHeading!=null?`${String(Math.round(S.compassHeading)%360).padStart(3,'0')}° ${headingDirection(S.compassHeading)}`:'Move iPhone…';
+   toast('Compass active');
+ }catch{toast('Compass is not available.')}
+}
 function navigateFromButton(button){const v=button?.dataset?.view;if(v)open(v)}
 function bindNavigation(){
  addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(['position','gps','address','weather'].includes(v))open(v);else if(!v)open('home')});
@@ -43,7 +122,16 @@ document.addEventListener('click',e=>{
  const c=e.target.closest('[data-copy]');
  if(c)navigator.clipboard?.writeText(c.dataset.copy).then(()=>toast('Copied')).catch(()=>toast('Copy unavailable'));
 });
-addEventListener('online',()=>{S.online=true;updateHome();if(S.pos){getAddress(true);getWeather(true)}if(S.view!=='home')render()});addEventListener('offline',()=>{S.online=false;updateHome();if(S.view!=='home')render()});document.addEventListener('visibilitychange',()=>{if(!document.hidden){freshGPS();if(S.online&&S.pos){getAddress(true);getWeather(true)}}});function realignHome(){if(S.view!=='home'||!S.mapReady||!S.pos)return;requestAnimationFrame(()=>{S.map.resize();center(true);setTimeout(()=>{if(S.view==='home'&&S.pos){S.map.resize();center(true)}},350)})}
+addEventListener('online',()=>{S.online=true;updateHome();if(S.pos){getAddress(true);getWeather(true)}if(S.view!=='home')render()});
+addEventListener('offline',()=>{S.online=false;updateHome();if(S.view!=='home')render()});
+function recoverGPS(){
+ if(document.visibilityState==='hidden')return;
+ if(!S.gpsActive)startGPS();else freshGPS();
+ if(S.online&&S.pos){getAddress(true);getWeather(true)}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)recoverGPS()});
+addEventListener('pageshow',recoverGPS);
+addEventListener('focus',recoverGPS);;function realignHome(){if(S.view!=='home'||!S.mapReady||!S.pos)return;requestAnimationFrame(()=>{S.map.resize();center(true);setTimeout(()=>{if(S.view==='home'&&S.pos){S.map.resize();center(true)}},350)})}
 if('serviceWorker'in navigator){
  navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload());
 }
