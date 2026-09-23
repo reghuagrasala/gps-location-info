@@ -74,7 +74,7 @@ function updateCompassDisplay(h){
  const raw=normalizeHeading(h);if(raw===null)return;
  const rounded=Math.round(raw)%360;
  S.compassHeading=raw;
- $('compass').textContent=`${String(rounded).padStart(3,'0')}° ${headingDirection(raw)}`;
+ $('compass').textContent=`${String(rounded).padStart(3,'0')}° ${headingDirection(raw)}`;$('compass').classList.toggle('active',S.compass);
 }
 function orient(e){
  let h=null;
@@ -90,7 +90,7 @@ async function compass(){
    S.compass=false;
    removeEventListener('deviceorientationabsolute',orient);
    removeEventListener('deviceorientation',orient);
-   $('compass').textContent='N';
+   $('compass').textContent='N';$('compass').classList.remove('active');
    return;
  }
  try{
@@ -101,7 +101,7 @@ async function compass(){
    S.compass=true;
    addEventListener('deviceorientationabsolute',orient,true);
    addEventListener('deviceorientation',orient,true);
-   $('compass').textContent=S.compassHeading!=null?`${String(Math.round(S.compassHeading)%360).padStart(3,'0')}° ${headingDirection(S.compassHeading)}`:'Move iPhone…';
+   $('compass').textContent=S.compassHeading!=null?`${String(Math.round(S.compassHeading)%360).padStart(3,'0')}° ${headingDirection(S.compassHeading)}`:'Tap header';$('compass').classList.add('active');
    toast('Compass active');
  }catch{toast('Compass is not available.')}
 }
@@ -110,6 +110,8 @@ function bindNavigation(){
  addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(['position','gps','address','weather'].includes(v))open(v);else if(!v)open('home')});
 }
 document.addEventListener('click',e=>{
+ const header=e.target.closest('.detail-head');
+ if(header&&!e.target.closest('#back')){compass();return}
  const navButton=e.target.closest('.nav button,.home-card[data-view]');
  if(navButton)return;
  if(e.target.closest('#back'))open('home');
