@@ -28,7 +28,10 @@ function orient(e){const h=typeof e.webkitCompassHeading==='number'?e.webkitComp
 function navigateFromButton(button){const v=button?.dataset?.view;if(!v)return;open(v)}
 function bindNavigation(){
  document.querySelectorAll('.nav button,.home-card[data-view]').forEach(button=>{
-   button.addEventListener('click',e=>{e.stopPropagation();navigateFromButton(button)});
+   const go=e=>{e.preventDefault();e.stopPropagation();navigateFromButton(button)};
+   button.addEventListener('touchend',go,{passive:false});
+   button.addEventListener('pointerup',go);
+   button.addEventListener('click',go);
  });
 }
 document.addEventListener('click',e=>{
