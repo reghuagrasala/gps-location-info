@@ -14,7 +14,7 @@
 <header class="home-head"><button class="head-btn" id="settings" aria-label="Settings">⚙</button><div><h1>My Location Info</h1><p>GPS updates offline</p></div><button class="head-btn" id="info" aria-label="Information">ⓘ</button></header>
 <div class="globe-card"><div id="globe"></div><div class="map-status" id="mapStatus">Waiting for GPS…</div></div>
 <div class="home-grid">
-<button class="home-card" data-view="position"><b>Position</b><strong id="hPos">Waiting…</strong><small id="hPos2">GPS</small></button>
+<button type="button" class="home-card" data-view="position"><b>Position</b><strong id="hPos">Waiting…</strong><small id="hPos2">GPS</small></button>
 <button class="home-card" data-view="gps"><b>GPS Data</b><strong id="hGps">Waiting…</strong><small id="hGps2">Accuracy</small></button>
 <button class="home-card" data-view="address"><b>Address</b><strong id="hAddr">Waiting…</strong><small>Last result kept offline</small></button>
 <button class="home-card" data-view="weather"><b>Weather</b><strong id="hWeather">Waiting…</strong><small id="hWeather2">Last result kept offline</small></button>
@@ -23,7 +23,7 @@
 <section class="detail" id="detail" hidden>
 <header class="detail-head"><button class="back" id="back" aria-label="Back">‹</button><div><h2 id="title">Position</h2><p id="subtitle">Current device position</p></div><button class="compass" id="compass" aria-label="Compass">N</button></header>
 <div class="scroll" id="scroll"><div id="content"></div></div>
-<nav class="nav"><button data-view="position"><span>⌖</span>Position</button><button data-view="gps"><span>◎</span>GPS</button><button data-view="address"><span>⌖</span>Address</button><button data-view="weather"><span>☁</span>Weather</button></nav>
+<nav class="nav" aria-label="Main navigation"><button type="button" data-view="position"><span>⌖</span>Position</button><button data-view="gps"><span>◎</span>GPS</button><button data-view="address"><span>⌖</span>Address</button><button data-view="weather"><span>☁</span>Weather</button></nav>
 </section>
 </main><div class="toast" id="toast"></div>
 <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
