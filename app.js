@@ -25,14 +25,23 @@ function render(){const cfg={position:['Position','Current device position'],gps
 function open(v){if(!['home','position','gps','address','weather'].includes(v))return;S.view=v;$('home').hidden=v!=='home';$('detail').hidden=v==='home';if(v!=='home'){$('scroll').scrollTop=0;render()}else requestAnimationFrame(()=>{if(S.mapReady&&S.pos){S.map.resize();center(true);setTimeout(()=>{if(S.view==='home'&&S.pos)center(true)},250)}})}
 async function compass(){if(S.compass){S.compass=false;removeEventListener('deviceorientationabsolute',orient);removeEventListener('deviceorientation',orient);$('compass').textContent='N';return}try{if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'&&await DeviceOrientationEvent.requestPermission()!=='granted')return toast('Compass permission was not granted.');S.compass=true;addEventListener('deviceorientationabsolute',orient,true);addEventListener('deviceorientation',orient,true);toast('Compass active')}catch{toast('Compass is not available.')}}
 function orient(e){const h=typeof e.webkitCompassHeading==='number'?e.webkitCompassHeading:(e.absolute&&typeof e.alpha==='number'?(360-e.alpha)%360:null);if(h==null)return;$('compass').textContent=`${Math.round(h)}°`}
-function navigateFromButton(button){const v=button?.dataset?.view;if(!v)return;open(v)}
+function navigateFromButton(button){const v=button?.dataset?.view;if(v)open(v)}
 function bindNavigation(){
- document.querySelectorAll('.nav button,.home-card[data-view]').forEach(button=>{
-   const go=e=>{e.preventDefault();e.stopPropagation();navigateFromButton(button)};
-   button.addEventListener('touchend',go,{passive:false});
-   button.addEventListener('pointerup',go);
-   button.addEventListener('click',go);
- });
+ document.addEventListener('touchend',e=>{
+   const b=e.target.closest('.nav button,.home-card[data-view]');
+   if(!b)return;
+   e.preventDefault();e.stopPropagation();navigateFromButton(b);
+ },{capture:true,passive:false});
+ document.addEventListener('pointerup',e=>{
+   const b=e.target.closest('.nav button,.home-card[data-view]');
+   if(!b)return;
+   e.preventDefault();e.stopPropagation();navigateFromButton(b);
+ },true);
+ document.addEventListener('click',e=>{
+   const b=e.target.closest('.nav button,.home-card[data-view]');
+   if(!b)return;
+   e.preventDefault();e.stopPropagation();navigateFromButton(b);
+ },true);
 }
 document.addEventListener('click',e=>{
  const navButton=e.target.closest('.nav button,.home-card[data-view]');
