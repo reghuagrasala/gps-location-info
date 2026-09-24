@@ -1,1 +1,11 @@
-PLACEHOLDER
+@media (min-width:700px){
+  .page{max-width:760px;margin:auto}
+  .home-page{max-width:760px;margin:auto}
+  .bottom-nav{max-width:760px;left:50%;right:auto;width:100%;transform:translateX(-50%)}
+}
+@media (max-width:360px){
+  .home-menu__item{padding:10px;grid-template-columns:30px 1fr 14px}
+  .home-menu__icon{width:30px;height:30px;font-size:16px}
+  .home-menu__item strong{font-size:12px}
+  .home-menu__item small{font-size:8px}
+}
