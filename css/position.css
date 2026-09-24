@@ -1,0 +1,13 @@
+.position-map-wrap{position:relative;margin:-14px -14px 12px;height:clamp(300px,43vh,470px);min-height:275px;background:#0a1b2b;overflow:hidden;border-bottom:1px solid var(--line)}
+.position-map{width:100%;height:100%;background:
+  radial-gradient(circle at 45% 48%,rgba(53,131,204,.22),transparent 25%),
+  linear-gradient(145deg,#0d2438,#07121f 70%)}
+.position-map__grid{width:100%;height:100%;opacity:.25;background-image:linear-gradient(rgba(130,180,220,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(130,180,220,.16) 1px,transparent 1px);background-size:48px 48px}
+.position-marker{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:var(--green);border:4px solid rgba(4,15,25,.9);box-shadow:0 0 0 9px rgba(82,224,139,.12),0 0 28px rgba(82,224,139,.85)}
+.map-control{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:7px}
+.map-control button{width:38px;height:38px;border-radius:13px;background:rgba(5,15,27,.82);border:1px solid var(--line);display:grid;place-items:center;font-size:17px}
+.map-attribution{position:absolute;left:10px;bottom:8px;font-size:8px;color:#8295aa;background:rgba(4,12,21,.72);padding:4px 7px;border-radius:7px}
+.position-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.position-card{padding:13px;min-height:78px}
+.position-card .label{font-size:10px;color:var(--muted)}.position-card .value{font-size:16px;font-weight:750;margin-top:6px;word-break:break-word}.position-card .sub{font-size:9px;color:#758aa2;margin-top:3px}
+.position-card.wide{grid-column:1/-1}
