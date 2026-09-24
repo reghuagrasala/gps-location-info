@@ -1,0 +1,10 @@
+.gps-status{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.gps-status__item{padding:14px}.gps-status__label{font-size:10px;color:var(--muted)}.gps-status__value{font-size:15px;font-weight:750;margin-top:6px;display:flex;align-items:center;gap:7px}
+.gps-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
+.gps-card{padding:14px}.gps-card .label{font-size:10px;color:var(--muted)}.gps-card .value{font-size:18px;font-weight:800;margin-top:6px}.gps-card .sub{font-size:9px;color:var(--muted);margin-top:2px}
+.compass-card{margin-top:9px;padding:16px;text-align:center}
+.compass{width:170px;height:170px;margin:2px auto 10px;border-radius:50%;border:1px solid rgba(130,190,235,.22);position:relative;background:radial-gradient(circle,#152b43,#07111f 70%);box-shadow:inset 0 0 35px rgba(0,0,0,.5)}
+.compass:before{content:"";position:absolute;inset:14px;border-radius:50%;border:1px dashed rgba(130,190,235,.22)}
+.compass .north{position:absolute;top:9px;left:50%;transform:translateX(-50%);color:#ff6975;font-weight:800}.compass .south{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);color:var(--muted)}.compass .west{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted)}.compass .east{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.compass-center{position:absolute;inset:0;display:grid;place-items:center;font-size:22px;font-weight:800}.compass-center small{display:block;font-size:11px;color:var(--muted);text-align:center}
+.data-list{margin-top:9px;overflow:hidden}.data-row{display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:9px;padding:12px 14px;border-bottom:1px solid var(--line)}.data-row:last-child{border-bottom:0}.data-icon{width:30px;height:30px;border-radius:10px;background:rgba(77,163,255,.09);display:grid;place-items:center}.data-row .label{font-size:10px;color:var(--muted)}.data-row .value{font-size:12px;font-weight:700;margin-top:2px;text-align:right}
