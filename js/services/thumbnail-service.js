@@ -1,1 +1,4 @@
-PLACEHOLDER
+window.MLIThumbnailService=(()=>{const cacheName="mli-thumbnail-cache-v1";
+async function load(url,img){if(!url){img.classList.add("thumb-placeholder");return}try{const r=await fetch(url,{cache:"force-cache"});if(!r.ok)throw 0;const blob=await r.blob();img.src=URL.createObjectURL(blob);img.loading="lazy"}catch(e){img.classList.add("thumb-placeholder")}}
+function placeholder(el,label="Location"){el.setAttribute("aria-label",label);el.style.background="linear-gradient(135deg,hsl("+(label.length*47%360)+" 55% 28%),#091727)";el.textContent=label.slice(0,1).toUpperCase()}
+return{load,placeholder,cacheName}})();
