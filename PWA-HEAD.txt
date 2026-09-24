@@ -1,1 +1,11 @@
-PLACEHOLDER
+Load order for all pages:
+1. api-config.js
+2. gps-core.js
+3. offline-cache.js
+4. icon-service.js
+5. thumbnail-service.js
+6. app.js
+7. page-specific service, if required
+
+Keep API keys out of browser files. Use Cloudflare Worker Secrets for HERE,
+Mapbox and any future secret-bearing provider.
