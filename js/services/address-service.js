@@ -1,1 +1,29 @@
-PLACEHOLDER
+window.MLIAddressService = (() => {
+  const CACHE="mli:last-address-v1";
+  async function requestProvider(provider, lat, lon){
+    if(!provider?.enabled || !provider.endpoint) return null;
+    const u=new URL(provider.endpoint,location.origin);
+    u.searchParams.set("lat",lat);u.searchParams.set("lon",lon);
+    const r=await fetch(u,{headers:{Accept:"application/json"}});
+    if(!r.ok) throw new Error(provider.id+" "+r.status);
+    return await r.json();
+  }
+  async function resolve(lat,lon){
+    const list=window.MLI_API_CONFIG?.address?.providers||[];
+    for(const p of list){
+      try{
+        const result=await requestProvider(p,lat,lon);
+        if(result){
+          localStorage.setItem(CACHE,JSON.stringify({result,lat,lon,timestamp:Date.now(),provider:p.id}));
+          return {...result,provider:p.id,stale:false};
+        }
+      }catch(e){}
+    }
+    try{
+      const cached=JSON.parse(localStorage.getItem(CACHE)||"null");
+      if(cached?.result) return {...cached.result,provider:cached.provider,stale:true};
+    }catch(e){}
+    return null;
+  }
+  return {resolve};
+})();
