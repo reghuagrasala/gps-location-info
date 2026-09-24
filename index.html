@@ -1,1 +1,18 @@
-PLACEHOLDER
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#07111f"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest"><title>My Location Info</title>
+<link rel="stylesheet" href="css/common.css"><link rel="stylesheet" href="css/home.css"><link rel="stylesheet" href="css/responsive.css">
+</head><body><div class="app home-page">
+<div class="home-top"><button class="home-tool">⚙</button><div class="home-brand"><h1>My Location Info</h1><p>GPS updates offline</p></div><button class="home-tool">i</button></div>
+<section class="home-earth" aria-label="Current location overview"><div class="home-earth__globe"></div><div class="home-earth__glow"></div><div class="home-location"><strong>Current GPS position</strong><span>Device GPS • offline capable</span></div></section>
+<nav class="home-menu" aria-label="Location sections">
+<a class="home-menu__item green" href="position.html"><span class="home-menu__icon">📍</span><span><strong>Position</strong><small>Where am I?</small></span><span class="home-menu__arrow">›</span></a>
+<a class="home-menu__item blue" href="gps-data.html"><span class="home-menu__icon">🛰️</span><span><strong>GPS Data</strong><small>How is it measured?</small></span><span class="home-menu__arrow">›</span></a>
+<a class="home-menu__item gold" href="address.html"><span class="home-menu__icon">🗺️</span><span><strong>Address</strong><small>What place is this?</small></span><span class="home-menu__arrow">›</span></a>
+<a class="home-menu__item purple" href="weather.html"><span class="home-menu__icon">🌦️</span><span><strong>Weather</strong><small>What's happening here?</small></span><span class="home-menu__arrow">›</span></a>
+</nav>
+<footer class="home-footer">Explore Your World · GPS is device-based · APIs can be added later</footer>
+</div>
+<script src="js/api-config.js"></script><script src="js/gps-core.js"></script><script src="js/offline-cache.js"></script><script src="js/icon-service.js"></script><script src="js/services/thumbnail-service.js"></script><script src="js/app.js"></script>
+</body></html>
