@@ -1,6 +1,5 @@
-const CACHE="mli-safe-v6";
-self.addEventListener("install",event=>{event.waitUntil(self.skipWaiting())});
-self.addEventListener("activate",event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim()})())});
-// Deliberately do not intercept fetch requests.
-// Safari/iOS must receive Cloudflare's normal redirects directly.
-// Offline GPS itself does not require a service worker.
+const CACHE="mli-offline-v1";
+const SHELL=["./","./index.html","./position.html","./gps-data.html","./address.html","./weather.html","./css/common.css","./css/home.css","./css/position.css","./css/gps-data.css","./css/address.css","./css/weather.css","./css/responsive.css","./js/app.js","./js/gps-core.js","./js/offline-cache.js","./js/api-config.js","./js/icon-service.js","./js/osm-map.js","./js/services/address-service.js","./js/services/weather-service.js","./js/services/thumbnail-service.js","./icons/icon-sprite.svg","./manifest.webmanifest"];
+self.addEventListener("install",e=>{e.waitUntil((async()=>{const c=await caches.open(CACHE);for(const url of SHELL){try{const r=await fetch(url,{cache:"no-store"});if(r.ok&&!r.redirected)await c.put(url,r)}catch(_){}}await self.skipWaiting()})())});
+self.addEventListener("activate",e=>{e.waitUntil((async()=>{for(const k of await caches.keys())if(k!==CACHE)await caches.delete(k);await self.clients.claim()})())});
+self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;const u=new URL(e.request.url);if(u.origin!==location.origin)return;e.respondWith((async()=>{const c=await caches.open(CACHE);const hit=await c.match(e.request);try{const r=await fetch(e.request,{cache:"no-store"});if(r.ok&&!r.redirected)await c.put(e.request,r.clone());return r}catch(_){return hit||c.match("./index.html")}})())});
